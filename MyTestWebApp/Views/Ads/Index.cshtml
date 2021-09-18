@@ -1,0 +1,53 @@
+﻿@model IEnumerable<MyTestWebApp.Models.Ad>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table style="border-collapse" class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model=>model.Image)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Number)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Text)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Rating)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                <img src=@String.Format("data:image/jpg;base64,{0}",Convert.ToBase64String(item.Image)); />
+            </td>    
+            <td>
+                @Html.DisplayFor(modelItem => item.Number)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Text)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rating)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.AdId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.AdId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.AdId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
