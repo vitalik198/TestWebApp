@@ -113,7 +113,7 @@ namespace MyTestWebApp.Controllers
 
             if (Image == null)
             {
-                return RedirectToAction();
+
             }
             else if (Image != null || Image.Length > 0)
             {

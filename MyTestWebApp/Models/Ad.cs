@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace MyTestWebApp.Models
 {
@@ -21,6 +22,7 @@ namespace MyTestWebApp.Models
         public string Text { get; set; }
 
         [Required]
+        [BindNever]
         public byte[] Image { get; set; }
 
         public int Rating { get; set; }
