@@ -19,10 +19,11 @@ namespace MyTestWebApp.Models
         public User User { get; set; }
 
         [Required]
+        [DataType(DataType.MultilineText)]
         public string Text { get; set; }
 
         [Required]
-        [BindNever]
+        [DataType(DataType.Upload)]
         public byte[] Image { get; set; }
 
         public int Rating { get; set; }
