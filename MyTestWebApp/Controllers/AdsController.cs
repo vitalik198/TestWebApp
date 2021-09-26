@@ -109,11 +109,13 @@ namespace MyTestWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind(include:"AdId,Number,Text")] Ad ad,IFormFile Image)
         {
-            ModelState.Remove("Image");
+            var old = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == ad.AdId).ToList()[0];
 
+            //old image return
+            ModelState.Remove("Image");
             if (Image == null)
             {
-                ad.Image = _context.Ads.AsNoTracking<Ad>().Where(x=>x.AdId==ad.AdId).ToList()[0].Image;
+                ad.Image = old.Image;
             }
             else if (Image != null || Image.Length > 0)
             {
@@ -124,6 +126,12 @@ namespace MyTestWebApp.Controllers
                     ad.Image = fileBytes;
                 }
             }
+
+            //old data return
+            ad.DropTime = old.DropTime;
+            ad.CreateTime = old.CreateTime;
+            ad.Rating = old.Rating;
+            ad.User = old.User; 
 
             if (id != ad.AdId)
             {
