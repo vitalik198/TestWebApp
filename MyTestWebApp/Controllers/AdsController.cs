@@ -24,7 +24,7 @@ namespace MyTestWebApp.Controllers
         // GET: Ads
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Ads.ToListAsync());
+                return View(await _context.Ads.ToListAsync());
         }
 
         // GET: Ads/Details/5
@@ -58,14 +58,14 @@ namespace MyTestWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AdId,Number,Text")] Ad ad, IFormFile Image)
         {
-            ModelState.Remove("Image");
-
             if (Image==null)
             {
-                return RedirectToAction();
+              
             }
             else if (Image != null || Image.Length > 0)
             {
+                ModelState.Remove("Image");
+
                 using (var ms = new MemoryStream())
                 {
                     Image.CopyTo(ms);
@@ -107,13 +107,13 @@ namespace MyTestWebApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("AdId,Number,Text")] Ad ad,IFormFile Image)
+        public async Task<IActionResult> Edit(Guid id, [Bind(include:"AdId,Number,Text")] Ad ad,IFormFile Image)
         {
             ModelState.Remove("Image");
 
             if (Image == null)
             {
-
+                ad.Image = _context.Ads.AsNoTracking<Ad>().Where(x=>x.AdId==ad.AdId).ToList()[0].Image;
             }
             else if (Image != null || Image.Length > 0)
             {
