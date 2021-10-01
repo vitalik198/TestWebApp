@@ -21,10 +21,13 @@ namespace MyTestWebApp.Controllers
             _context = context;
         }
 
-        // GET: Ads
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public async Task<IActionResult> Index(string? search)
         {
-                return View(await _context.Ads.ToListAsync());
+            var result = await _context.Ads.ToListAsync();
+            if (search != null && search.Length > 0)
+                result = result.Where(x => x.Text.ToLower().Contains(search.ToLower())).ToList();
+            return View(result);
         }
 
         // GET: Ads/Details/5
