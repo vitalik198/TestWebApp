@@ -35,7 +35,7 @@ namespace MyTestWebApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = new User { Email = model.Email, UserName = model.UserName, Admin = model.IsAdmin };
+                User user = new User { Email = model.Email, UserName = model.UserName, Admin = model.IsAdmin};
                 var result = await userManager.CreateAsync(user, model.Password);
 
                 //Roles Seed

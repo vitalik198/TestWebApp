@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyTestWebApp.Context;
 using MyTestWebApp.Models;
@@ -16,10 +17,12 @@ namespace MyTestWebApp.Controllers
     public class AdsController : Controller
     {
         private readonly ApplicationContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public AdsController(ApplicationContext context)
+        public AdsController(ApplicationContext context,UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -28,6 +31,7 @@ namespace MyTestWebApp.Controllers
             var result = await _context.Ads.ToListAsync();
             if (search != null && search.Length > 0)
                 result = result.Where(x => x.Text.ToLower().Contains(search.ToLower())).ToList();
+
             return View(result);
         }
 
@@ -82,6 +86,7 @@ namespace MyTestWebApp.Controllers
 
             if (ModelState.IsValid)
             {
+                ad.UserId = User.Identity.Name;
                 ad.CreateTime = DateTime.Now;
                 ad.DropTime = DateTime.Now.AddDays(90);
                 ad.AdId = Guid.NewGuid();
@@ -137,7 +142,7 @@ namespace MyTestWebApp.Controllers
             ad.DropTime = old.DropTime;
             ad.CreateTime = old.CreateTime;
             ad.Rating = old.Rating;
-            ad.User = old.User; 
+            ad.UserId = old.UserId; 
 
             if (id != ad.AdId)
             {

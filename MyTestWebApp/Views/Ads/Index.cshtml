@@ -1,10 +1,13 @@
 ﻿@model IEnumerable<MyTestWebApp.Models.Ad>
 
+@using Microsoft.AspNetCore.Identity;
+@inject UserManager<User> userManager
+
 @{
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Доска объявлений</h1>
 <h3>
     <form action="" method="get" class=float-right>
         <input type="search" name="search" placeholder="Поиск"/>
@@ -12,9 +15,7 @@
     </form>
 </h3>
 
-<p class="btn btn-primary">
-    <a asp-action="Create" class="text-black-50">Create New</a>
-</p>
+ <a asp-action="Create" class="btn btn-success">Добавить объявление</a>
 <table style="border-collapse" class="table">
     <thead>
         <tr>
@@ -29,6 +30,9 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Rating)
+            </th>
+             <th>
+                @Html.DisplayNameFor(model => model.UserId)
             </th>
             <th></th>
         </tr>
@@ -53,6 +57,14 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Rating)
+            </td>
+             <td>
+             <div>
+                 @{
+                          var user = await userManager.FindByIdAsync(item.UserId);
+                  }
+                 @user.UserName
+             </div> 
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.AdId">Edit</a> |

@@ -24,9 +24,18 @@
                         <li >
                             <a class="nav-link text-dark" asp-area=""asp-controller="Ads" asp-action="Index" >Объявления</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Index">Войти</a>
-                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Выйти из аккаунта</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class=nav-item>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Войти в аккаунт</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
