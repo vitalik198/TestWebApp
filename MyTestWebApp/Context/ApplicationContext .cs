@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyTestWebApp.Models;
 using System;
 using System.Collections.Generic;
@@ -7,15 +8,13 @@ using System.Threading.Tasks;
 
 namespace MyTestWebApp.Context
 {
-    public class ApplicationContext:DbContext
+    public class ApplicationContext: IdentityDbContext<User>
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<Ad> Ads { get; set; }
-
-        public ApplicationContext(DbContextOptions options)
-        : base(options)
+        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
 
         }
+
+        public DbSet<Ad> Ads { get; set; }
     }
 }
