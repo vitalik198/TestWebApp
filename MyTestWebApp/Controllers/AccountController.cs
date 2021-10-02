@@ -45,7 +45,7 @@ namespace MyTestWebApp.Controllers
                     await roleManager.CreateAsync(new IdentityRole("admin"));
                 //Roles Seed
 
-                string role= model.IsAdmin ? "admin":"user";
+                string role = model.IsAdmin ? "admin" : "user";
                 var result2 = await userManager.AddToRoleAsync(user, role);
 
                 if (result.Succeeded && result2.Succeeded)
@@ -102,7 +102,7 @@ namespace MyTestWebApp.Controllers
         {
            await signInManager.SignOutAsync();
 
-           return RedirectToAction("Index", "Home");
+           return RedirectToAction("Index", "Account");
         }     
     }
 }

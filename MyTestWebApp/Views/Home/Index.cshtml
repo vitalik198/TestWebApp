@@ -1,8 +1,12 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Начальная страница";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Доска объявлений</h1>
+    <h5 class="float-md-right">
+        <a asp-controller="Ads" asp-action="Index" class="btn btn-info">Перейти к объявлениям</a>
+        <hr />
+        <a asp-controller="Accounts" asp-action="Index" class="btn btn-info">Личный кабинет</a>
+    </h5>
 </div>
