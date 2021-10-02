@@ -10,11 +10,13 @@ namespace MyTestWebApp.Controllers
     {
         private readonly UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
+        private readonly RoleManager<IdentityRole> roleManager; 
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager,RoleManager<IdentityRole> roleManager)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.roleManager = roleManager;
         }
 
         public IActionResult Index()
@@ -36,7 +38,17 @@ namespace MyTestWebApp.Controllers
                 User user = new User { Email = model.Email, UserName = model.UserName, Admin = model.IsAdmin };
                 var result = await userManager.CreateAsync(user, model.Password);
 
-                if (result.Succeeded)
+                //Roles Seed
+                if (await roleManager.FindByNameAsync("user") == null)
+                    await roleManager.CreateAsync(new IdentityRole("user"));
+                if (await roleManager.FindByNameAsync("admin") == null)
+                    await roleManager.CreateAsync(new IdentityRole("admin"));
+                //Roles Seed
+
+                string role= model.IsAdmin ? "admin":"user";
+                var result2 = await userManager.AddToRoleAsync(user, role);
+
+                if (result.Succeeded && result2.Succeeded)
                 {
                     await signInManager.SignInAsync(user, false);
                     return RedirectToAction("Index", "Home");
@@ -44,6 +56,10 @@ namespace MyTestWebApp.Controllers
                 else
                 {
                     foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    foreach (var error in result2.Errors)
                     {
                         ModelState.AddModelError(string.Empty, error.Description);
                     }
@@ -87,6 +103,6 @@ namespace MyTestWebApp.Controllers
            await signInManager.SignOutAsync();
 
            return RedirectToAction("Index", "Home");
-        }
+        }     
     }
 }
