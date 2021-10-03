@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MyTestWebApp.Models;
 using System;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace MyTestWebApp.Controllers
 {
+    [Authorize]
     public class AccountController : Controller
     {
         private readonly UserManager<User> userManager;
@@ -24,13 +26,16 @@ namespace MyTestWebApp.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(ViewRegisterModel model)
         {
             if (ModelState.IsValid)
@@ -69,12 +74,14 @@ namespace MyTestWebApp.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult Login(string returnUrl)
         {
             return View(new ViewLoginModel { ReturnUrl=returnUrl});
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(ViewLoginModel model)
@@ -91,12 +98,11 @@ namespace MyTestWebApp.Controllers
                     if (result.Succeeded)
                     {
                         return Redirect(model.ReturnUrl ?? "/");
-                    }
-                    ModelState.AddModelError("", "Неверный логин или пароль");
+                    }                    
                 }
-                return View(model);
             }
-            return RedirectToAction(nameof(Login));
+            ModelState.AddModelError("", "Неверный логин или пароль");
+            return View(model);
         }
 
         public async Task<IActionResult> Logout()

@@ -20,7 +20,7 @@ namespace MyTestWebApp.Models
         public int Number { get; set; }
         
         [Display(Name ="Пользователь")]
-        public string UserId { get; set; }
+        public string UserName { get; set; }
 
         [Required]
         [DataType(DataType.MultilineText)]
