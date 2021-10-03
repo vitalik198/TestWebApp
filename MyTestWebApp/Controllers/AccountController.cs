@@ -79,14 +79,15 @@ namespace MyTestWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(ViewLoginModel model)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 User user = await userManager.FindByNameAsync(model.UserName);
+
                 if (user != null)
                 {
                     await signInManager.SignOutAsync();
 
-                    var result = await signInManager.PasswordSignInAsync(user, model.Password,false,false );
+                    var result = await signInManager.PasswordSignInAsync(user, model.Password, false, false);
                     if (result.Succeeded)
                     {
                         return Redirect(model.ReturnUrl ?? "/");

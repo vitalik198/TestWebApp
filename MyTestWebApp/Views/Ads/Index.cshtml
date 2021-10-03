@@ -23,17 +23,17 @@
                 @Html.DisplayNameFor(model=>model.Image)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Number)
+                <a asp-action="Index" asp-route-sort="number"> @Html.DisplayNameFor(model => model.Number)</a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Text)
+                <a asp-action="Index" asp-route-sort="text">  @Html.DisplayNameFor(model => model.Text)</a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Rating)
-            </th>
+                <a asp-action="Index" asp-route-sort="rating">   @Html.DisplayNameFor(model => model.Rating)</a>
+             </th>
              <th>
-                @Html.DisplayNameFor(model => model.UserId)
-            </th>
+                 <a asp-action="Index" asp-route-sort="user">   @Html.DisplayNameFor(model => model.UserId)</a>
+             </th>
             <th></th>
         </tr>
     </thead>

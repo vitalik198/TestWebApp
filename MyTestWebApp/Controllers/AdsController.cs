@@ -26,11 +26,30 @@ namespace MyTestWebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string? search)
+        public async Task<IActionResult> Index(string? search,string? sort)
         {
             var result = await _context.Ads.ToListAsync();
             if (search != null && search.Length > 0)
                 result = result.Where(x => x.Text.ToLower().Contains(search.ToLower())).ToList();
+
+            if (sort!=null)
+                switch (sort)
+                {
+                    case "number":
+                        result = result.OrderBy(x => x.Number).ToList();
+                        break;
+                    case "text":
+                        result = result.OrderBy(x => x.Text).ToList();
+                        break;
+                    case "rating":
+                        result = result.OrderBy(x => x.Rating).ToList();
+                        break;
+                    case "user":
+                        result = result.OrderBy(x => x.UserId).ToList();
+                        break;
+                    default:
+                        break;
+                }
 
             return View(result);
         }
