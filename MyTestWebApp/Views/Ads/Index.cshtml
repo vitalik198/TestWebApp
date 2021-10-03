@@ -60,11 +60,9 @@
             </td>
              <td>
              <div>
-                 @{
-                          var user = await userManager.FindByIdAsync(item.UserId);
-                  }
-                 @user.UserName
-             </div> 
+                 @{ var user = await userManager.FindByIdAsync(item.UserId);   }
+                 @if (user != null) {<div> user.UserName</div> }
+             </div>
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.AdId">Edit</a> |
@@ -72,6 +70,6 @@
                 <a asp-action="Delete" asp-route-id="@item.AdId">Delete</a>
             </td>
         </tr>
-}
+        }
     </tbody>
 </table>
