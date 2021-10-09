@@ -53,6 +53,10 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.AdId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+    @if ((User.Identity.IsAuthenticated && User.IsInRole("admin")) || User.Identity.Name == Model.UserName)
+    {<div>
+            <a asp-action="Edit" asp-route-id="@Model.AdId" class="btn btn-info">Edit</a> |
+    </div>}
+            <a asp-action="Index" class="btn btn-dark">Back to List</a>
 </div>
