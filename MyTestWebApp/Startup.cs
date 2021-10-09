@@ -39,7 +39,13 @@ namespace MyTestWebApp
             });
 
             services.ConfigureApplicationCookie(options => {
-               // options.LoginPath = "/account/register";
+               
+            });
+
+            services.AddSwaggerGen(optios =>
+            {
+                //optios.SwaggerDoc("v1", 
+                //    new OpenApiInfo {  Title = ""})
             });
         }
 
