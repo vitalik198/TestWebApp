@@ -19,20 +19,20 @@ namespace MyTestWebApp.Controllers
         private readonly ApplicationContext _context;
         private readonly UserManager<User> _userManager;
 
-        public AdsController(ApplicationContext context, UserManager<User> userManager)
+        public AdsController(ApplicationContext context,UserManager<User> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string? search, string? sort)
+        public async Task<IActionResult> Index(string? search,string? sort)
         {
             var result = await _context.Ads.ToListAsync();
             if (search != null && search.Length > 0)
                 result = result.Where(x => x.Text.ToLower().Contains(search.ToLower())).ToList();
 
-            if (sort != null)
+            if (sort!=null)
                 switch (sort)
                 {
                     case "number":
@@ -45,7 +45,7 @@ namespace MyTestWebApp.Controllers
                         result = result.OrderBy(x => x.Rating).ToList();
                         break;
                     case "user":
-                        result = result.OrderBy(x => x.UserName).ToList();
+                        result = result.OrderBy(x => x.UserId).ToList();
                         break;
                     default:
                         break;
@@ -54,6 +54,7 @@ namespace MyTestWebApp.Controllers
             return View(result);
         }
 
+        // GET: Ads/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null)
@@ -71,30 +72,24 @@ namespace MyTestWebApp.Controllers
             return View(ad);
         }
 
+        // GET: Ads/Create
         [Authorize]
         public IActionResult Create()
         {
             return View();
         }
 
+        // POST: Ads/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AdId,Number,Text")] Ad ad, IFormFile Image)
         {
-            //validation for image
-            try
+            if (Image==null)
             {
-                var img = System.Drawing.Image.FromStream(Image.OpenReadStream());
-            }
-            catch
-            {
-                ModelState.AddModelError("", "Загруженный файл не является изображением или поврежден");
-            }
-
-            if (Image == null)
-            {
-                ModelState.AddModelError("","Отсутствует изображение");
+              
             }
             else if (Image != null || Image.Length > 0)
             {
@@ -110,7 +105,7 @@ namespace MyTestWebApp.Controllers
 
             if (ModelState.IsValid)
             {
-                ad.UserName = User.Identity.Name;
+                ad.UserId = User.Identity.Name;
                 ad.CreateTime = DateTime.Now;
                 ad.DropTime = DateTime.Now.AddDays(90);
                 ad.AdId = Guid.NewGuid();
@@ -121,7 +116,7 @@ namespace MyTestWebApp.Controllers
             return View(ad);
         }
 
-        [Authorize]
+        // GET: Ads/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
             if (id == null)
@@ -134,36 +129,17 @@ namespace MyTestWebApp.Controllers
             {
                 return NotFound();
             }
-
-            if (User.Identity.Name != ad.UserName && !User.IsInRole("admin"))
-            {
-                return RedirectToAction("Index");
-            }
-
             return View(ad);
         }
 
-        [Authorize]
+        // POST: Ads/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind(include: "AdId,Number,Text")] Ad ad, IFormFile Image)
+        public async Task<IActionResult> Edit(Guid id, [Bind(include:"AdId,Number,Text")] Ad ad,IFormFile Image)
         {
-            if (User.Identity.Name != ad.UserName && !User.IsInRole("admin"))
-            {
-                return RedirectToAction("Index");
-            }
-
             var old = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == ad.AdId).ToList()[0];
-
-            //validation for image
-            try
-            {
-                var img = System.Drawing.Image.FromStream(Image.OpenReadStream());
-            }
-            catch
-            {
-                ModelState.AddModelError("", "Загруженный файл не является изображением или поврежден");
-            }
 
             //old image return
             ModelState.Remove("Image");
@@ -185,7 +161,7 @@ namespace MyTestWebApp.Controllers
             ad.DropTime = old.DropTime;
             ad.CreateTime = old.CreateTime;
             ad.Rating = old.Rating;
-            ad.UserName = old.UserName;
+            ad.UserId = old.UserId; 
 
             if (id != ad.AdId)
             {
@@ -215,7 +191,6 @@ namespace MyTestWebApp.Controllers
             return View(ad);
         }
 
-        [Authorize]
         // GET: Ads/Delete/5
         public async Task<IActionResult> Delete(Guid? id)
         {
@@ -231,11 +206,6 @@ namespace MyTestWebApp.Controllers
                 return NotFound();
             }
 
-            if (User.Identity.Name != ad.UserName && !User.IsInRole("admin"))
-            {
-                return RedirectToAction("Index");
-            }
-
             return View(ad);
         }
 
@@ -245,12 +215,6 @@ namespace MyTestWebApp.Controllers
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             var ad = await _context.Ads.FindAsync(id);
-
-            if (User.Identity.Name != ad.UserName && !User.IsInRole("admin"))
-            {
-                return RedirectToAction("Index");
-            }
-
             _context.Ads.Remove(ad);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

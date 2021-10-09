@@ -32,14 +32,13 @@
                 <a asp-action="Index" asp-route-sort="rating">   @Html.DisplayNameFor(model => model.Rating)</a>
              </th>
              <th>
-                 <a asp-action="Index" asp-route-sort="user">   @Html.DisplayNameFor(model => model.UserName)</a>
+                 <a asp-action="Index" asp-route-sort="user">   @Html.DisplayNameFor(model => model.UserId)</a>
              </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
-        {
+        @foreach (var item in Model) {
         <tr>
             <td>
 
@@ -61,19 +60,15 @@
             </td>
              <td>
              <div>
-                 @if (item.UserName != null)
-                 {<div> @item.UserName</div> }
+                 @{ var user = await userManager.FindByIdAsync(item.UserId);   }
+                 @if (user != null) {<div> user.UserName</div> }
              </div>
             </td>
-             <td>
-                 <a asp-action="Details" asp-route-id="@item.AdId" class="btn btn-primary">Details</a>
-
-                 @if ((User.Identity.IsAuthenticated && User.IsInRole("admin"))|| User.Identity.Name==item.UserName)      
-                 { <div>  
-                 <a asp-action="Edit" asp-route-id="@item.AdId" class="btn btn-outline-secondary">Edit</a> 
-                 <a asp-action="Delete" asp-route-id="@item.AdId" class="btn btn-outline-danger">Delete</a>
-                 </div>}
-             </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.AdId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.AdId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.AdId">Delete</a>
+            </td>
         </tr>
         }
     </tbody>
