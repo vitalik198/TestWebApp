@@ -13,6 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using MyTestWebApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
+using System.IO;
+using System.Reflection;
 
 namespace MyTestWebApp
 {
@@ -47,15 +49,19 @@ namespace MyTestWebApp
                
             });
 
-            services.AddSwaggerGen(optios =>
+            services.AddSwaggerGen(options =>
             {
-                optios.SwaggerDoc("v1",
+                options.SwaggerDoc("v1",
                     new OpenApiInfo
                     {
                         Title = "Swager API Info",
                         Description="Documentation for MyWebApplication API",
                         Version="v1"
                     });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);
             });
         }
 

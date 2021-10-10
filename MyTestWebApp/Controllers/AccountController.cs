@@ -78,7 +78,7 @@ namespace MyTestWebApp.Controllers
         [HttpGet]
         public IActionResult Login(string returnUrl)
         {
-            return View(new ViewLoginModel { ReturnUrl=returnUrl});
+            return View(new ViewLoginModel { ReturnUrl = returnUrl });
         }
 
         [AllowAnonymous]
