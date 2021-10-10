@@ -6,15 +6,18 @@ using System.Threading.Tasks;
 
 namespace MyTestWebApp.Controllers
 {
+    /// <summary>
+    /// API controllers for login and logout actions
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ApiAccountController : ControllerBase
     {
         private readonly SignInManager<User> signInManager;
         private readonly UserManager<User> userManager;
-        private readonly RoleManager<User> roleManager;
+        private readonly RoleManager<IdentityRole> roleManager;
 
-        public ApiAccountController(SignInManager<User> signInManager, UserManager<User> userManager, RoleManager<User> roleManager)
+        public ApiAccountController(SignInManager<User> signInManager, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
@@ -22,14 +25,14 @@ namespace MyTestWebApp.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] ViewLoginModel loginModel)
+        public async Task<IActionResult> Login([FromBody] ViewLoginApiModel loginModel)
         {
-            User user= await userManager.FindByNameAsync(loginModel.UserName);
-            var result = await signInManager.PasswordSignInAsync(user, loginModel.Password,false,false);
+            User user = await userManager.FindByNameAsync(loginModel.UserName);
+            var result = await signInManager.PasswordSignInAsync(user, loginModel.Password, false, false);
             if (result.Succeeded)
                 return Ok();
-            else 
-               return Unauthorized();
+            else
+                return Unauthorized();
         }
     }
 }

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MyTestWebApp.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.OpenApi.Models;
 
 namespace MyTestWebApp
 {
@@ -31,7 +32,11 @@ namespace MyTestWebApp
 
             services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration.GetConnectionString("TestAppDatabase")));
 
-            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationContext>();
+            services.AddIdentity<User, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationContext>()
+                .AddRoles<IdentityRole>()
+                .AddDefaultTokenProviders();
+
             services.Configure<IdentityOptions>(options => {
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = true;
@@ -44,8 +49,13 @@ namespace MyTestWebApp
 
             services.AddSwaggerGen(optios =>
             {
-                //optios.SwaggerDoc("v1", 
-                //    new OpenApiInfo {  Title = ""})
+                optios.SwaggerDoc("v1",
+                    new OpenApiInfo
+                    {
+                        Title = "Swager API Info",
+                        Description="Documentation for MyWebApplication API",
+                        Version="v1"
+                    });
             });
         }
 
@@ -75,6 +85,12 @@ namespace MyTestWebApp
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+            });
+
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("v1/swagger.json", "Swager API");
             });
         }
     }
