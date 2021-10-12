@@ -89,12 +89,12 @@ namespace MyTestWebApp.Controllers
             }
             catch
             {
-                ModelState.AddModelError("", "Загруженный файл не является изображением или поврежден");
+                ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
             }
 
             if (Image == null)
             {
-                ModelState.AddModelError("","Отсутствует изображение");
+                ModelState.AddModelError("Image","Отсутствует изображение");
             }
             else if (Image != null || Image.Length > 0)
             {
@@ -107,6 +107,9 @@ namespace MyTestWebApp.Controllers
                     ad.Image = fileBytes;
                 }
             }
+
+            if (Image.Length > 5242880)
+                ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
 
             if (ModelState.IsValid)
             {
@@ -162,8 +165,11 @@ namespace MyTestWebApp.Controllers
             }
             catch
             {
-                ModelState.AddModelError("", "Загруженный файл не является изображением или поврежден");
+                ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
             }
+
+            if (Image.Length > 5242880)
+                ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
 
             //old image return
             ModelState.Remove("Image");
