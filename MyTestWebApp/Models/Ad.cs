@@ -1,30 +1,25 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc;
 
 namespace MyTestWebApp.Models
 {
-    [Bind(include:"AdId,Number,Text")]
+    [Bind(include: "AdId,Number,Text")]
     public class Ad
     {
         [Key]
         public Guid AdId { get; set; }
 
         [Required]
-        [Display(Name ="Номер")]
+        [Display(Name = "Номер")]
         public int Number { get; set; }
-        
-        [Display(Name ="Пользователь")]
+
+        [Display(Name = "Пользователь")]
         public string UserName { get; set; }
 
         [Required]
         [DataType(DataType.MultilineText)]
-        [Display(Name ="Информация")]
+        [Display(Name = "Информация")]
         public string Text { get; set; }
 
         /// <summary>
@@ -35,13 +30,13 @@ namespace MyTestWebApp.Models
         [Display(Name = "Фото")]
         public byte[] Image { get; set; }
 
-       [Display(Name = "Рейтинг")]
+        [Display(Name = "Рейтинг")]
         public int Rating { get; set; }
 
-        [Display(Name ="Дата создания")]
+        [Display(Name = "Дата создания")]
         public DateTime CreateTime { get; set; }
 
-        [Display(Name ="Дата закрытия")]
+        [Display(Name = "Дата закрытия")]
         public DateTime DropTime { get; set; }
     }
 }

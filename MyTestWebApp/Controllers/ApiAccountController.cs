@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MyTestWebApp.Models;
 using System.Threading.Tasks;
@@ -51,6 +49,11 @@ namespace MyTestWebApp.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Create new user account
+        /// </summary>
+        /// <param name="registerModel"></param>
+        /// <returns></returns>
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] ViewRegisterModel registerModel)
         {
@@ -59,12 +62,12 @@ namespace MyTestWebApp.Controllers
                 User user = new User { Email = registerModel.Email, UserName = registerModel.UserName, Admin = registerModel.IsAdmin };
                 var result = await userManager.CreateAsync(user, registerModel.Password);
 
-                //Roles Seed
+                //Roles Seed {
                 if (await roleManager.FindByNameAsync("user") == null)
                     await roleManager.CreateAsync(new IdentityRole("user"));
                 if (await roleManager.FindByNameAsync("admin") == null)
                     await roleManager.CreateAsync(new IdentityRole("admin"));
-                //Roles Seed
+                //Roles Seed }
 
                 string role = registerModel.IsAdmin ? "admin" : "user";
                 var result2 = await userManager.AddToRoleAsync(user, role);
@@ -87,6 +90,29 @@ namespace MyTestWebApp.Controllers
             }
 
             return BadRequest(ModelState);
+        }
+
+        /// <summary>
+        /// Get logined user info
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("info")]
+        public AccountInfoModel Info()
+        {
+            var info = new AccountInfoModel();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                info.IsAuthenticated = true;
+                info.userName = User.Identity.Name;
+            }
+            else
+            {
+                info.IsAuthenticated = false;
+                info.userName = null;
+            }
+
+            return info;
         }
     }
 }

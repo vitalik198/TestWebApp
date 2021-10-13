@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using System.IO;
 using System.Reflection;
+using Recaptcha.Web.Configuration;
 
 namespace MyTestWebApp
 {
@@ -63,6 +64,8 @@ namespace MyTestWebApp
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 options.IncludeXmlComments(xmlPath);
             });
+
+            RecaptchaConfigurationManager.SetConfiguration(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
