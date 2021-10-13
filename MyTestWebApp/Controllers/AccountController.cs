@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MyTestWebApp.Models;
+using Recaptcha.Web;
+using Recaptcha.Web.Mvc;
 using System;
 using System.Threading.Tasks;
-using Recaptcha.Web.Mvc;
-using Recaptcha.Web;
 
 namespace MyTestWebApp.Controllers
 {
@@ -14,9 +14,9 @@ namespace MyTestWebApp.Controllers
     {
         private readonly UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
-        private readonly RoleManager<IdentityRole> roleManager; 
+        private readonly RoleManager<IdentityRole> roleManager;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager,RoleManager<IdentityRole> roleManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, RoleManager<IdentityRole> roleManager)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
@@ -55,7 +55,7 @@ namespace MyTestWebApp.Controllers
 
             if (ModelState.IsValid)
             {
-                User user = new User { Email = model.Email, UserName = model.UserName, Admin = model.IsAdmin};
+                User user = new User { Email = model.Email, UserName = model.UserName, Admin = model.IsAdmin };
                 var result = await userManager.CreateAsync(user, model.Password);
 
                 //Roles Seed {
@@ -113,7 +113,7 @@ namespace MyTestWebApp.Controllers
                     if (result.Succeeded)
                     {
                         return Redirect(model.ReturnUrl ?? "/");
-                    }                    
+                    }
                 }
             }
             ModelState.AddModelError("", "Неверный логин или пароль");
@@ -122,9 +122,9 @@ namespace MyTestWebApp.Controllers
 
         public async Task<IActionResult> Logout()
         {
-           await signInManager.SignOutAsync();
+            await signInManager.SignOutAsync();
 
-           return RedirectToAction("Index", "Account");
-        }     
+            return RedirectToAction("Index", "Account");
+        }
     }
 }

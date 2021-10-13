@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyTestWebApp.Context;
@@ -112,7 +111,7 @@ namespace MyTestWebApp.Controllers
             }
             catch (ArgumentOutOfRangeException)
             {
-                ModelState.AddModelError("","Ad not exist");
+                ModelState.AddModelError("", "Ad not exist");
                 return BadRequest(ModelState);
             }
 

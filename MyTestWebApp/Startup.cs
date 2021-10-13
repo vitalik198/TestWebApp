@@ -1,21 +1,17 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MyTestWebApp.Context;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using MyTestWebApp.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
+using MyTestWebApp.Context;
+using MyTestWebApp.Models;
+using Recaptcha.Web.Configuration;
+using System;
 using System.IO;
 using System.Reflection;
-using Recaptcha.Web.Configuration;
 
 namespace MyTestWebApp
 {
@@ -40,14 +36,16 @@ namespace MyTestWebApp
                 .AddRoles<IdentityRole>()
                 .AddDefaultTokenProviders();
 
-            services.Configure<IdentityOptions>(options => {
+            services.Configure<IdentityOptions>(options =>
+            {
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = false;
             });
 
-            services.ConfigureApplicationCookie(options => {
-               
+            services.ConfigureApplicationCookie(options =>
+            {
+
             });
 
             services.AddSwaggerGen(options =>
@@ -56,8 +54,8 @@ namespace MyTestWebApp
                     new OpenApiInfo
                     {
                         Title = "Swager API Info",
-                        Description="Documentation for MyWebApplication API",
-                        Version="v1"
+                        Description = "Documentation for MyWebApplication API",
+                        Version = "v1"
                     });
 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
