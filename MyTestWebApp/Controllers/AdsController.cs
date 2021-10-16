@@ -69,10 +69,12 @@ namespace MyTestWebApp.Controllers
             return View(ad);
         }
 
+        [HttpGet]
         [Authorize]
         public IActionResult Create()
         {
-            return View();
+            AdCreateModel ad=new AdCreateModel();
+            return PartialView("CreateModal", ad);
         }
 
         [HttpPost]
