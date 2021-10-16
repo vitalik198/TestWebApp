@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -45,7 +46,8 @@ namespace MyTestWebApp
 
             services.ConfigureApplicationCookie(options =>
             {
-
+                options.LoginPath = "/Account/Login";
+                options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
             });
 
             services.AddSwaggerGen(options =>

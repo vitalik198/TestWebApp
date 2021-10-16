@@ -16,13 +16,20 @@
 </h3>
 
 <div id="AdsIndex"></div>
-<button type="button" class="btn alert-primary" data-toggle="ajax-modal" data-target="#addAd" data-url="@Url.Action("Create")">Добавить</button>
+@if (User.Identity.IsAuthenticated)
+{
+    <button type="button" class="btn btn-primary" data-toggle="ajax-modal" data-target="#addAd" data-url="@Url.Action("Create")">Добавить</button>
+}
+else
+{
+ <a asp-action="login" asp-controller="Account" class="btn btn-primary">Войдите, чтобы добавлять объявления</a>
+}
 
 <table style="border-collapse:collapse" class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model=>model.Image)
+                @Html.DisplayNameFor(model => model.Image)
             </th>
             <th>
                 <a asp-action="Index" asp-route-sort="number"> @Html.DisplayNameFor(model => model.Number)</a>

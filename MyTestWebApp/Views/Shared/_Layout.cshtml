@@ -21,8 +21,8 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Домой</a>
                         </li>
-                        <li >
-                            <a class="nav-link text-dark" asp-area=""asp-controller="Ads" asp-action="Index" >Объявления</a>
+                        <li>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Ads" asp-action="Index">Объявления</a>
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
@@ -36,6 +36,9 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Войти в аккаунт</a>
                             </li>
                         }
+                        <li>
+                            <a class="nav-link text-dark" href="/swagger">API</a>
+                        </li>
                     </ul>
                 </div>
             </div>

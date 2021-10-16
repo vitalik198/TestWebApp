@@ -7,3 +7,4 @@
             Index.find('.modal').modal('show');
         })
     })
+})
