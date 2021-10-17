@@ -1,16 +1,13 @@
-﻿@model MyTestWebApp.Models.Ad
+﻿@model MyTestWebApp.Models.AdCreateModel
 
 @{
-    ViewData["Title"] = "Create";
+    Layout = null;
 }
 
-<h1>Добавить объявление</h1>
-
-<h4>Введите данные нового объявления:</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" enctype="multipart/form-data">
+    <div class="col">
+        <form asp-action="Create" enctype="multipart/form-data"  onsubmit="return createInPopUp(this)";>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Number" class="control-label"></label>
@@ -19,16 +16,16 @@
             </div>
             <div class="form-group">
                 <label asp-for="Text" class="control-label"></label>
-                <textarea asp-for="Text"  class="form-control"></textarea>
+                <textarea asp-for="Text" class="form-control"></textarea>
                 <span asp-validation-for="Text" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Image" class="control-label"></label>
-                <input asp-for="Image" class="form-control"  name="Image" type="file"/>
+                <input asp-for="Image" class="form-control" name="Image" type="file" />
                 <span asp-validation-for="Image" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Добавить" class="btn btn-primary"/>
+                <input type="submit" class="btn btn-primary" value="Добавить" >
             </div>
         </form>
     </div>

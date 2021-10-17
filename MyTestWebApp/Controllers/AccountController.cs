@@ -109,7 +109,7 @@ namespace MyTestWebApp.Controllers
                 {
                     await signInManager.SignOutAsync();
 
-                    var result = await signInManager.PasswordSignInAsync(user, model.Password, false, false);
+                    var result = await signInManager.PasswordSignInAsync(user, model.Password, true, false);
                     if (result.Succeeded)
                     {
                         return Redirect(model.ReturnUrl ?? "/");
