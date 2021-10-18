@@ -7,7 +7,7 @@
 <hr />
 <div class="row">
     <div class="col">
-        <form asp-action="Create" enctype="multipart/form-data"  onsubmit="return createInPopUp(this)";>
+        <form asp-action="Create" enctype="multipart/form-data"  onsubmit="return createInPopUp(this);">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Number" class="control-label"></label>
@@ -30,10 +30,7 @@
         </form>
     </div>
 </div>
-
-<div class="btn btn-outline-dark">
-    <a asp-action="Index">Назад</a>
-</div>
+            <button onclick="closePopUp()" class="btn btn-dark">Назад</button>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

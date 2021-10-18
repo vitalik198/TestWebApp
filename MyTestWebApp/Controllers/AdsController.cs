@@ -170,22 +170,24 @@ namespace MyTestWebApp.Controllers
 
             //validation for image
             System.Drawing.Image img;
+            bool imageIsVlalid;
             try
             {
                 if (image != null)
                     img = System.Drawing.Image.FromStream(image.OpenReadStream());
+                imageIsVlalid = true;
             }
             catch (Exception e)
             {
-                ModelState.AddModelError("", e.HelpLink);
                 ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
+                imageIsVlalid = false;
             }
 
             if (image == null)
             {
                 ModelState.AddModelError("Image", "Отсутствует изображение");
             }
-            else if (image != null || image.Length > 0)
+            else if ((image != null || image.Length > 0)&&imageIsVlalid)
             {
                 ModelState.Remove("Image");
 
@@ -201,10 +203,10 @@ namespace MyTestWebApp.Controllers
             }
 
             //old image return
-            ModelState.Remove("Image");
             if (image == null)
             {
                 ad.Image = old.Image;
+                ModelState.Remove("Image");
             }
             else if (image != null || image.Length > 0)
             {
@@ -245,9 +247,10 @@ namespace MyTestWebApp.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+             return Json(new {isValid=true, html = RazorConverter.RenderRazorViewToString(this, "Index", await _context.Ads.ToListAsync()) });
+
             }
-            return View(ad);
+            return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Edit", ad )});
         }
 
         [Authorize]
@@ -288,7 +291,7 @@ namespace MyTestWebApp.Controllers
 
             _context.Ads.Remove(ad);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return Json(new { html = RazorConverter.RenderRazorViewToString(this, "Index",await _context.Ads.ToListAsync()) });
         }
 
         private bool AdExists(Guid id)
