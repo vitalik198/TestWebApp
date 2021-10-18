@@ -62,7 +62,7 @@
                         </div>
                     </td>
                     <td>
-                        <a asp-action="Details" asp-route-id="@item.AdId" class="btn btn-primary">Details</a>
+                        <button onclick="showInPopUp('@Url.Action("Details","Ads",new{id=item.AdId})','Детали')" asp-route-id="@item.AdId" class="btn btn-primary">Details</button>
 
                         @if ((User.Identity.IsAuthenticated && User.IsInRole("admin")) || User.Identity.Name == item.UserName)
                         {<div>
