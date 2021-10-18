@@ -1,23 +1,18 @@
 ﻿@model MyTestWebApp.Models.Ad
 
 @{
-    ViewData["Title"] = "Delete";
+    Layout = null;
 }
 
-<h1>Удаление</h1>
-
-<h3>Вы действительно хотите удалить это объявление?</h3>
 <div>
-    <h4>Ad</h4>
-    <hr />
     <dl class="row">
-        <dt class="col-sm-2">
+        <dt class="col-sm-4">
             @Html.DisplayNameFor(model => model.Number)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Number)
         </dd>
-        <dt class="col-sm-2">
+        <dt class="col-sm-4">
             @Html.DisplayNameFor(model => model.Text)
         </dt>
         <dd class="col-sm-10">
@@ -25,9 +20,9 @@
         </dd>
     </dl>
 
-    <form asp-action="Delete">
+    <form asp-action="Delete" onsubmit="return deleteInPopUp(this);">
         <input type="hidden" asp-for="AdId" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Удалить" class="btn btn-danger" /> |
+            <button onclick="closePopUp()" class="btn btn-dark">Назад</button>
     </form>
 </div>

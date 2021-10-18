@@ -1,16 +1,12 @@
 ﻿@model MyTestWebApp.Models.Ad
 
 @{
-    ViewData["Title"] = "Edit";
+    Layout = null;
 }
 
-<h1>Edit</h1>
-
-<h4>Ad</h4>
-<hr />
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <div class="col-md-10">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data" onsubmit="return editInPopUp(this);">
             <div asp-validation-summary="ModelOnly"  class="text-danger"></div>
             <input type="hidden" asp-for="AdId" />
             <div class="form-group">
@@ -26,16 +22,17 @@
             <div class="form-group">
                 <label asp-for="Image" class="control-label"></label>
                 <input class="form-control" type="file" name="Image"/>
-            </div>           
+                <span asp-validation-for="Image" class="text-danger"></span>
+             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Сохранить" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+            <button onclick="closePopUp()" class="btn btn-dark">Назад</button>
 </div>
 
 @section Scripts {

@@ -1,93 +1,9 @@
 ﻿@model IEnumerable<MyTestWebApp.Models.Ad>
 
-@using Microsoft.AspNetCore.Identity;
-@inject UserManager<User> userManager
-
 @{
     ViewData["Title"] = "Index";
 }
 
-<h1>Доска объявлений</h1>
-<h3>
-    <form action="" method="get" class=float-right>
-        <input type="search" name="search" placeholder="Поиск" />
-        <input type="submit" value="Искать" />
-    </form>
-</h3>
-
-<div id="AdsIndex"></div>
-@if (User.Identity.IsAuthenticated)
-{
-    <button type="button" class="btn btn-primary" data-toggle="ajax-modal" data-target="#addAd" data-url="@Url.Action("Create")">Добавить</button>
-}
-else
-{
- <a asp-action="login" asp-controller="Account" class="btn btn-primary">Войдите, чтобы добавлять объявления</a>
-}
-
-<table style="border-collapse:collapse" class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Image)
-            </th>
-            <th>
-                <a asp-action="Index" asp-route-sort="number"> @Html.DisplayNameFor(model => model.Number)</a>
-            </th>
-            <th>
-                <a asp-action="Index" asp-route-sort="text">  @Html.DisplayNameFor(model => model.Text)</a>
-            </th>
-            <th>
-                <a asp-action="Index" asp-route-sort="rating">   @Html.DisplayNameFor(model => model.Rating)</a>
-            </th>
-            <th>
-                <a asp-action="Index" asp-route-sort="user">   @Html.DisplayNameFor(model => model.UserName)</a>
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-
-                    @{
-                        var base64 = Convert.ToBase64String(item.Image);
-                        var imgSrc = String.Format("data:image/gif;base64,{0}", base64);
-                    }
-
-                    <img width="250" height="250" src="@imgSrc" />
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Number)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Text)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Rating)
-                </td>
-                <td>
-                    <div>
-                        @if (item.UserName != null)
-                        {
-                            <div> @item.UserName</div>
-                        }
-                    </div>
-                </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.AdId" class="btn btn-primary">Details</a>
-
-                    @if ((User.Identity.IsAuthenticated && User.IsInRole("admin")) || User.Identity.Name == item.UserName)
-                    {
-                        <div>
-                            <a asp-action="Edit" asp-route-id="@item.AdId" class="btn btn-outline-secondary">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@item.AdId" class="btn btn-outline-danger">Delete</a>
-                        </div>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div id="view-all">
+    @await Html.PartialAsync("_IndexView",Model)
+</div>

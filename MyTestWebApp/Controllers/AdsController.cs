@@ -4,11 +4,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyTestWebApp.Context;
+using MyTestWebApp.Helpers;
 using MyTestWebApp.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using static MyTestWebApp.Helpers.AttributeNoDirectAccess;
 
 namespace MyTestWebApp.Controllers
 {
@@ -69,59 +72,66 @@ namespace MyTestWebApp.Controllers
             return View(ad);
         }
 
-        [HttpGet]
+        [NoDirectAccess]
         [Authorize]
         public IActionResult Create()
         {
-            AdCreateModel ad=new AdCreateModel();
-            return PartialView("CreateModal", ad);
+            return PartialView();
         }
 
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AdId,Number,Text")] Ad ad, IFormFile Image)
+        public async Task<IActionResult> Create(AdCreateModel ad, IFormFile image)
         {
             //validation for image
+            System.Drawing.Image img;
             try
             {
-                var img = System.Drawing.Image.FromStream(Image.OpenReadStream());
+                if (image != null)
+                    img = System.Drawing.Image.FromStream(image.OpenReadStream());
             }
-            catch
+            catch (Exception e)
             {
+                ModelState.AddModelError("", e.HelpLink);
                 ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
             }
 
-            if (Image == null)
+            if (image == null)
             {
                 ModelState.AddModelError("Image", "Отсутствует изображение");
             }
-            else if (Image != null || Image.Length > 0)
+            else if (image != null || image.Length > 0)
             {
                 ModelState.Remove("Image");
 
                 using (var ms = new MemoryStream())
                 {
-                    Image.CopyTo(ms);
+                    image.CopyTo(ms);
                     var fileBytes = ms.ToArray();
                     ad.Image = fileBytes;
                 }
+
+                if (image.Length > 5242880)
+                    ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
             }
 
-            if (Image.Length > 5242880)
-                ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
-
+            Ad adResult = new Ad();
             if (ModelState.IsValid)
             {
-                ad.UserName = User.Identity.Name;
-                ad.CreateTime = DateTime.Now;
-                ad.DropTime = DateTime.Now.AddDays(90);
-                ad.AdId = Guid.NewGuid();
-                _context.Add(ad);
+                adResult.UserName = User.Identity.Name;
+                adResult.CreateTime = DateTime.Now;
+                adResult.DropTime = DateTime.Now.AddDays(90);
+                adResult.AdId = ad.AdId;
+                adResult.Number = ad.Number;
+                adResult.Image = ad.Image;
+                adResult.Text = ad.Text;
+                _context.Add(adResult);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return Json(new { isValid = true, html = RazorConverter.RenderRazorViewToString(this, "_IndexView", _context.Ads.ToArray()) });
             }
-            return View(ad);
+
+            return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Create", ad) });
         }
 
         [Authorize]
@@ -149,7 +159,7 @@ namespace MyTestWebApp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind(include: "AdId,Number,Text")] Ad ad, IFormFile Image)
+        public async Task<IActionResult> Edit(Guid id, [Bind(include: "AdId,Number,Text")] Ad ad, IFormFile image)
         {
             if (User.Identity.Name != ad.UserName && !User.IsInRole("admin"))
             {
@@ -159,29 +169,50 @@ namespace MyTestWebApp.Controllers
             var old = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == ad.AdId).ToList()[0];
 
             //validation for image
+            System.Drawing.Image img;
+            bool imageIsVlalid;
             try
             {
-                var img = System.Drawing.Image.FromStream(Image.OpenReadStream());
+                if (image != null)
+                    img = System.Drawing.Image.FromStream(image.OpenReadStream());
+                imageIsVlalid = true;
             }
-            catch
+            catch (Exception e)
             {
                 ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
+                imageIsVlalid = false;
             }
 
-            if (Image.Length > 5242880)
-                ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
+            if (image == null)
+            {
+                ModelState.AddModelError("Image", "Отсутствует изображение");
+            }
+            else if ((image != null || image.Length > 0)&&imageIsVlalid)
+            {
+                ModelState.Remove("Image");
+
+                using (var ms = new MemoryStream())
+                {
+                    image.CopyTo(ms);
+                    var fileBytes = ms.ToArray();
+                    ad.Image = fileBytes;
+                }
+
+                if (image.Length > 5242880)
+                    ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
+            }
 
             //old image return
-            ModelState.Remove("Image");
-            if (Image == null)
+            if (image == null)
             {
                 ad.Image = old.Image;
+                ModelState.Remove("Image");
             }
-            else if (Image != null || Image.Length > 0)
+            else if (image != null || image.Length > 0)
             {
                 using (var ms = new MemoryStream())
                 {
-                    Image.CopyTo(ms);
+                    image.CopyTo(ms);
                     var fileBytes = ms.ToArray();
                     ad.Image = fileBytes;
                 }
@@ -216,9 +247,10 @@ namespace MyTestWebApp.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+             return Json(new {isValid=true, html = RazorConverter.RenderRazorViewToString(this, "Index", await _context.Ads.ToListAsync()) });
+
             }
-            return View(ad);
+            return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Edit", ad )});
         }
 
         [Authorize]
@@ -259,7 +291,7 @@ namespace MyTestWebApp.Controllers
 
             _context.Ads.Remove(ad);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return Json(new { html = RazorConverter.RenderRazorViewToString(this, "Index",await _context.Ads.ToListAsync()) });
         }
 
         private bool AdExists(Guid id)
