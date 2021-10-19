@@ -11,7 +11,21 @@ showInPopUp = (url, title) => {
     })
 }
 
-function closePopUp () {
+function updateIndex(url) {
+    var jqxhr = $.ajax({
+        url: url,
+        type: 'GET',
+        success: function (res) {
+            var final;
+            final = $(res).ready().find("#view-all").html();
+            console.log(res);
+            console.log(final);
+            $('#view-all').html(final);
+        }
+    });
+}
+
+function closePopUp() {
     $('#form-modal .modal-body').html('');
     $('#form-modal .modal-title').html('');
     $('#form-modal').modal('hide');
@@ -27,7 +41,7 @@ createInPopUp = form => {
             processData: false,
             success: function (res) {
                 if (res.isValid) {
-                    $('#view-all').html(res.html)
+                    $('#view-all').html(res.html);
                     closePopUp();
                 } else {
                     $('#form-modal .modal-body').html(res.html);
@@ -75,8 +89,8 @@ editInPopUp = form => {
             processData: false,
             success: function (res) {
                 if (res.isValid) {
-                    $('#view-all').html(res.html)
-                    closePopUp();
+                    updateIndex(res.url);
+                    closePopUp();;
                 } else {
                     $('#form-modal .modal-body').html(res.html);
                 }

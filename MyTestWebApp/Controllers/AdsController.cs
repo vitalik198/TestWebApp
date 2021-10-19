@@ -17,6 +17,8 @@ namespace MyTestWebApp.Controllers
 {
     public class AdsController : Controller
     {
+        private readonly int pageSize = 2;
+
         private readonly ApplicationContext _context;
         private readonly UserManager<User> _userManager;
 
@@ -26,8 +28,8 @@ namespace MyTestWebApp.Controllers
             _userManager = userManager;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Index(string? search, string? sort)
+        [HttpGet("{page?}")]
+        public async Task<IActionResult> Index(string? search, string? sort, int page = 1)
         {
             var result = await _context.Ads.ToListAsync();
             if (search != null && search.Length > 0)
@@ -52,7 +54,18 @@ namespace MyTestWebApp.Controllers
                         break;
                 }
 
-            return View(result);
+            var count = result.Count;
+            var items = result.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            PageViewModel pageViewModel = new PageViewModel(count, page, pageSize);
+            IndexPaginationViewModel viewModel = new IndexPaginationViewModel
+            {
+                PageViewModel = pageViewModel,
+                ads = items
+            };
+
+            Environment.SetEnvironmentVariable("page", page.ToString());
+            return View(viewModel);
         }
 
         public async Task<IActionResult> Details(Guid? id)
@@ -187,7 +200,7 @@ namespace MyTestWebApp.Controllers
             {
                 ModelState.AddModelError("Image", "Отсутствует изображение");
             }
-            else if ((image != null || image.Length > 0)&&imageIsVlalid)
+            else if ((image != null || image.Length > 0) && imageIsVlalid)
             {
                 ModelState.Remove("Image");
 
@@ -247,10 +260,19 @@ namespace MyTestWebApp.Controllers
                         throw;
                     }
                 }
-             return Json(new {isValid=true, html = RazorConverter.RenderRazorViewToString(this, "Index", await _context.Ads.ToListAsync()) });
+
+                var ads = await _context.Ads.ToListAsync();
+                int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+                IndexPaginationViewModel model = new IndexPaginationViewModel()
+                {
+                    ads = ads,
+                    PageViewModel = new PageViewModel(ads.Count, page, pageSize)
+                };
+
+                return Json(new { isValid = true,url= @Url.Action("Index","Ads",new{page=Environment.GetEnvironmentVariable("page")}) });
 
             }
-            return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Edit", ad )});
+            return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Edit", ad) });
         }
 
         [Authorize]
@@ -291,7 +313,7 @@ namespace MyTestWebApp.Controllers
 
             _context.Ads.Remove(ad);
             await _context.SaveChangesAsync();
-            return Json(new { html = RazorConverter.RenderRazorViewToString(this, "Index",await _context.Ads.ToListAsync()) });
+            return Json(new { html = RazorConverter.RenderRazorViewToString(this, "Index", await _context.Ads.ToListAsync()) });
         }
 
         private bool AdExists(Guid id)

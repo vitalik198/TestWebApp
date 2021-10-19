@@ -1,78 +1,97 @@
-﻿@model IEnumerable<MyTestWebApp.Models.Ad>
+﻿@model IndexPaginationViewModel
 
 
 
 <div>
     <h1>Доска объявлений</h1>
-    <h3>
-        <form action="" method="get" class=float-right>
+
+    <div class="border-right">
+        <form action="" method="get" class="float-right">
             <input type="search" name="search" placeholder="Поиск" />
             <input type="submit" value="Искать" />
         </form>
-    </h3>
+    </div>
 
-    <a onclick="showInPopUp('@Url.Action("Create","Ads",null,Context.Request.Scheme)', 'Добавить объявление')" class="btn btn-success">Добавить объявление</a>
+    @if (User.Identity.IsAuthenticated)
+    {
+                <a onclick="showInPopUp('@Url.Action("Create","Ads",null,Context.Request.Scheme)', 'Добавить объявление')" class="btn btn-success">Добавить объявление</a>
+    }
+    else
+    {
+                <hr class="invisible" />
+                <hr class="invisible" />
+                <div>
+                    <div class="alert alert-warning" role="alert">
+                        Вы должны быть авторизованы чтобы размещать уведомления!
+                    </div>
+                </div>
+    }
+
     <table style="border-collapse" class="table">
         <thead>
             <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.Image)
+                    @Html.DisplayNameFor(model => model.ad.Image)
                 </th>
                 <th>
-                    <a asp-action="Index" asp-route-sort="number"> @Html.DisplayNameFor(model => model.Number)</a>
+                    <a asp-action="Index" asp-route-sort="number"> @Html.DisplayNameFor(model => model.ad.Number)</a>
                 </th>
                 <th>
-                    <a asp-action="Index" asp-route-sort="text">  @Html.DisplayNameFor(model => model.Text)</a>
+                    <a asp-action="Index" asp-route-sort="text">  @Html.DisplayNameFor(model => model.ad.Text)</a>
                 </th>
                 <th>
-                    <a asp-action="Index" asp-route-sort="rating">   @Html.DisplayNameFor(model => model.Rating)</a>
+                    <a asp-action="Index" asp-route-sort="rating">   @Html.DisplayNameFor(model => model.ad.Rating)</a>
                 </th>
                 <th>
-                    <a asp-action="Index" asp-route-sort="user">   @Html.DisplayNameFor(model => model.UserName)</a>
+                    <a asp-action="Index" asp-route-sort="user">   @Html.DisplayNameFor(model => model.ad.UserName)</a>
                 </th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model)
+            @foreach (var item in Model.ads)
             {
-                <tr>
-                    <td>
+                        <tr>
+                            <td>
 
                         @{
                             var base64 = Convert.ToBase64String(item.Image);
                             var imgSrc = String.Format("data:image/gif;base64,{0}", base64);
                         }
 
-                        <img width="250" height="250" src="@imgSrc" />
-                    </td>
-                    <td>
+                                <img width="250" height="250" src="@imgSrc" />
+                            </td>
+                            <td>
                         @Html.DisplayFor(modelItem => item.Number)
-                    </td>
-                    <td>
+                            </td>
+                            <td>
                         @Html.DisplayFor(modelItem => item.Text)
-                    </td>
-                    <td>
+                            </td>
+                            <td>
                         @Html.DisplayFor(modelItem => item.Rating)
-                    </td>
-                    <td>
-                        <div>
+                            </td>
+                            <td>
+                                <div>
                             @if (item.UserName != null)
-                            {<div> @item.UserName</div>}
-                        </div>
-                    </td>
-                    <td>
-                        <button onclick="showInPopUp('@Url.Action("Details","Ads",new{id=item.AdId})','Детали')" asp-route-id="@item.AdId" class="btn btn-primary">Детали</button>
+                            {
+                                                <div> @item.UserName</div>
+                            }
+                                </div>
+                            </td>
+                            <td>
+                                <button onclick="showInPopUp('@Url.Action("Details","Ads",new{id=item.AdId})','Детали')" asp-route-id="@item.AdId" class="btn btn-primary">Детали</button>
 
                         @if ((User.Identity.IsAuthenticated && User.IsInRole("admin")) || User.Identity.Name == item.UserName)
-                        {<div>
-                                <button onclick="showInPopUp('@Url.Action("Edit","Ads",new{id=item.AdId})','Редаектировать')" asp-route-id="@item.AdId" class="btn btn-outline-info">Редаектировать</button>
-                                <button onclick="showInPopUp('@Url.Action("Delete","Ads",new{id=item.AdId})','Удалить')" asp-route-id="@item.AdId" class="btn btn-outline-danger">Удалить</button>
-                            </div>
+                        {
+                                            <div>
+                                                <button onclick="showInPopUp('@Url.Action("Edit","Ads",new{id=item.AdId})','Редаектировать')" asp-route-id="@item.AdId" class="btn btn-outline-info">Редаектировать</button>
+                                                <button onclick="showInPopUp('@Url.Action("Delete","Ads",new{id=item.AdId})','Удалить')" asp-route-id="@item.AdId" class="btn btn-outline-danger">Удалить</button>
+                                            </div>
                         }
-                    </td>
-                </tr>
+                            </td>
+                        </tr>
             }
         </tbody>
     </table>
+<page-link page-model="Model.PageViewModel" page-action="Index"></page-link>
 </div>
