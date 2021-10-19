@@ -41,8 +41,8 @@ createInPopUp = form => {
             processData: false,
             success: function (res) {
                 if (res.isValid) {
-                    $('#view-all').html(res.html);
-                    closePopUp();
+                    updateIndex(res.url);
+                    closePopUp();;
                 } else {
                     $('#form-modal .modal-body').html(res.html);
                 }
@@ -66,8 +66,8 @@ deleteInPopUp = form => {
             contentType: false,
             processData: false,
             success: function (res) {
-                $('#view-all').html(res.html);
-                closePopUp();
+                updateIndex(res.url);
+                closePopUp();;
             },
             error: function (err) {
                 console.log(err);

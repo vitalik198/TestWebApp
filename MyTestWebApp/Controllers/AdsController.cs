@@ -17,7 +17,7 @@ namespace MyTestWebApp.Controllers
 {
     public class AdsController : Controller
     {
-        private readonly int pageSize = 2;
+        private readonly int pageSize = 3;
 
         private readonly ApplicationContext _context;
         private readonly UserManager<User> _userManager;
@@ -141,7 +141,15 @@ namespace MyTestWebApp.Controllers
                 adResult.Text = ad.Text;
                 _context.Add(adResult);
                 await _context.SaveChangesAsync();
-                return Json(new { isValid = true, html = RazorConverter.RenderRazorViewToString(this, "_IndexView", _context.Ads.ToArray()) });
+                var ads = await _context.Ads.ToListAsync();
+                int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+                IndexPaginationViewModel model = new IndexPaginationViewModel()
+                {
+                    ads = ads,
+                    PageViewModel = new PageViewModel(ads.Count, page, pageSize)
+                };
+
+                return Json(new { isValid = true, url = @Url.Action("Index", "Ads", new { page = Environment.GetEnvironmentVariable("page") }) });
             }
 
             return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Create", ad) });
@@ -312,8 +320,17 @@ namespace MyTestWebApp.Controllers
             }
 
             _context.Ads.Remove(ad);
+
             await _context.SaveChangesAsync();
-            return Json(new { html = RazorConverter.RenderRazorViewToString(this, "Index", await _context.Ads.ToListAsync()) });
+            var ads = await _context.Ads.ToListAsync();
+            int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+            IndexPaginationViewModel model = new IndexPaginationViewModel()
+            {
+                ads = ads,
+                PageViewModel = new PageViewModel(ads.Count, page, pageSize)
+            };
+
+            return Json(new { isValid = true, url = @Url.Action("Index", "Ads", new { page = Environment.GetEnvironmentVariable("page") }) });
         }
 
         private bool AdExists(Guid id)
