@@ -84,7 +84,7 @@
                         @if ((User.Identity.IsAuthenticated && User.IsInRole("admin")) || User.Identity.Name == item.UserName)
                         {
                                             <div>
-                                                <button onclick="showInPopUp('@Url.Action("Edit","Ads",new{id=item.AdId})','Редаектировать')" asp-route-id="@item.AdId" class="btn btn-outline-info">Редаектировать</button>
+                                                <button onclick="showInPopUp('@Url.Action("Edit","Ads",new{id=item.AdId})','Редаектировать')" asp-route-id="@item.AdId" class="btn btn-outline-info">Редактировать</button>
                                                 <button onclick="showInPopUp('@Url.Action("Delete","Ads",new{id=item.AdId})','Удалить')" asp-route-id="@item.AdId" class="btn btn-outline-danger">Удалить</button>
                                             </div>
                         }
