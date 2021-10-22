@@ -155,6 +155,7 @@ namespace MyTestWebApp.Controllers
             return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Create", ad) });
         }
 
+        [NoDirectAccess]
         [Authorize]
         public async Task<IActionResult> Edit(Guid? id)
         {
@@ -174,19 +175,14 @@ namespace MyTestWebApp.Controllers
                 return RedirectToAction("Index");
             }
 
-            return View(ad);
+            return PartialView(ad);
         }
 
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind(include: "AdId,Number,Text")] Ad ad, IFormFile image)
+        public async Task<IActionResult> Edit(Guid id, Ad ad, IFormFile image)
         {
-            if (User.Identity.Name != ad.UserName && !User.IsInRole("admin"))
-            {
-                return RedirectToAction("Index");
-            }
-
             var old = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == ad.AdId).ToList()[0];
 
             //validation for image
@@ -244,6 +240,11 @@ namespace MyTestWebApp.Controllers
             ad.CreateTime = old.CreateTime;
             ad.Rating = old.Rating;
             ad.UserName = old.UserName;
+
+            if (User.Identity.Name != ad.UserName && !User.IsInRole("admin"))
+            {
+                return RedirectToAction("Index");
+            }
 
             if (id != ad.AdId)
             {
