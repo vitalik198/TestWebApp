@@ -28,7 +28,7 @@ namespace MyTestWebApp.Controllers
             _userManager = userManager;
         }
 
-        [HttpGet("{page?}")]
+        [HttpGet()]
         public async Task<IActionResult> Index(string? search, string? sort, int page = 1)
         {
             var result = await _context.Ads.ToListAsync();
