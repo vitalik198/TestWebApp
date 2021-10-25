@@ -5,9 +5,6 @@ namespace MyTestWebApp.Models
 {
     public class AdCreateModel
     {
-        [Key]
-        public Guid AdId { get; set; }
-
         [Required]
         [Display(Name = "Номер")]
         public int Number { get; set; }

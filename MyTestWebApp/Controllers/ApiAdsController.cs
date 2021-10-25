@@ -74,7 +74,6 @@ namespace MyTestWebApp.Controllers
 
             Ad ad = new Ad()
             {
-                AdId = value.AdId,
                 Number = value.Number,
                 Text = value.Text,
                 UserName = User.Identity.Name,
@@ -94,8 +93,6 @@ namespace MyTestWebApp.Controllers
         [HttpPut("{id}")]
         public IActionResult Put(Guid id, [FromBody] AdCreateModel value)
         {
-            value.AdId = id;
-
             //authorization check
             if (!User.Identity.IsAuthenticated)
             {

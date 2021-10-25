@@ -23,6 +23,7 @@ namespace MyTestWebApp.Controllers
             this.roleManager = roleManager;
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
             return View();
@@ -84,9 +85,9 @@ namespace MyTestWebApp.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult Login(string returnUrl)
+        public IActionResult Login()
         {
-            return View(new ViewLoginModel { ReturnUrl = returnUrl });
+            return View(new ViewLoginModel());
         }
 
         [AllowAnonymous]
@@ -105,7 +106,7 @@ namespace MyTestWebApp.Controllers
                     var result = await signInManager.PasswordSignInAsync(user, model.Password, true, false);
                     if (result.Succeeded)
                     {
-                        return Redirect(model.ReturnUrl ?? "/");
+                        return RedirectToAction("Index", "Ads");
                     }
                 }
             }
@@ -113,6 +114,7 @@ namespace MyTestWebApp.Controllers
             return View(model);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Logout()
         {
             await signInManager.SignOutAsync();

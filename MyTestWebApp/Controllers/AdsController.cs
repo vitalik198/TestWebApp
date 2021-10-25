@@ -8,6 +8,7 @@ using MyTestWebApp.Helpers;
 using MyTestWebApp.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ namespace MyTestWebApp.Controllers
             _userManager = userManager;
         }
 
-        [HttpGet()]
+        [HttpGet]
         public async Task<IActionResult> Index(string? search, string? sort, int page = 1)
         {
             var result = await _context.Ads.ToListAsync();
@@ -68,15 +69,10 @@ namespace MyTestWebApp.Controllers
             return View(viewModel);
         }
 
-        public async Task<IActionResult> Details(Guid? id)
+        [HttpGet]
+        public async Task<IActionResult> Details([Required] Guid id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ad = await _context.Ads
-                .FirstOrDefaultAsync(m => m.AdId == id);
+            var ad = await _context.Ads.FirstOrDefaultAsync(m => m.AdId == id);
             if (ad == null)
             {
                 return NotFound();
@@ -87,6 +83,7 @@ namespace MyTestWebApp.Controllers
 
         [NoDirectAccess]
         [Authorize]
+        [HttpGet]
         public IActionResult Create()
         {
             return PartialView();
@@ -135,7 +132,6 @@ namespace MyTestWebApp.Controllers
                 adResult.UserName = User.Identity.Name;
                 adResult.CreateTime = DateTime.Now;
                 adResult.DropTime = DateTime.Now.AddDays(90);
-                adResult.AdId = ad.AdId;
                 adResult.Number = ad.Number;
                 adResult.Image = ad.Image;
                 adResult.Text = ad.Text;
@@ -157,13 +153,9 @@ namespace MyTestWebApp.Controllers
 
         [NoDirectAccess]
         [Authorize]
-        public async Task<IActionResult> Edit(Guid? id)
+        [HttpGet]
+        public async Task<IActionResult> Edit([Required] Guid id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var ad = await _context.Ads.FindAsync(id);
             if (ad == null)
             {
@@ -278,23 +270,17 @@ namespace MyTestWebApp.Controllers
                     PageViewModel = new PageViewModel(ads.Count, page, pageSize)
                 };
 
-                return Json(new { isValid = true,url= @Url.Action("Index","Ads",new{page=Environment.GetEnvironmentVariable("page")}) });
+                return Json(new { isValid = true, url = @Url.Action("Index", "Ads", new { page = Environment.GetEnvironmentVariable("page") }) });
 
             }
             return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Edit", ad) });
         }
 
         [Authorize]
-        // GET: Ads/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        [HttpGet]
+        public async Task<IActionResult> Delete([Required] Guid id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ad = await _context.Ads
-                .FirstOrDefaultAsync(m => m.AdId == id);
+            var ad = await _context.Ads.FirstOrDefaultAsync(m => m.AdId == id);
             if (ad == null)
             {
                 return NotFound();
