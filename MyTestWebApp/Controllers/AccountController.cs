@@ -58,13 +58,6 @@ namespace MyTestWebApp.Controllers
                 User user = new User { Email = model.Email, UserName = model.UserName, Admin = model.IsAdmin };
                 var result = await userManager.CreateAsync(user, model.Password);
 
-                //Roles Seed {
-                if (await roleManager.FindByNameAsync("user") == null)
-                    await roleManager.CreateAsync(new IdentityRole("user"));
-                if (await roleManager.FindByNameAsync("admin") == null)
-                    await roleManager.CreateAsync(new IdentityRole("admin"));
-                //Roles Seed }
-
                 string role = model.IsAdmin ? "admin" : "user";
                 var result2 = await userManager.AddToRoleAsync(user, role);
 
