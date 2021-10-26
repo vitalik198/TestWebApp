@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyTestWebApp.Context;
@@ -21,12 +21,12 @@ namespace MyTestWebApp.Controllers
         private readonly int _pageSize = 3;
 
         private readonly ApplicationContext _context;
-        private readonly UserManager<User> _userManager;
+        private readonly IWebHostEnvironment _webHost;
 
-        public AdsController(ApplicationContext context, UserManager<User> userManager)
+        public AdsController(ApplicationContext context, IWebHostEnvironment webHost)
         {
             _context = context;
-            _userManager = userManager;
+            _webHost = webHost;
         }
 
         [HttpGet]
@@ -95,46 +95,20 @@ namespace MyTestWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AdCreateModel ad, IFormFile image)
         {
-            //validation for image
-            System.Drawing.Image img;
-            try
-            {
-                if (image != null)
-                    img = System.Drawing.Image.FromStream(image.OpenReadStream());
-            }
-            catch (Exception e)
-            {
-                ModelState.AddModelError("", e.HelpLink);
-                ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
-            }
-
-            if (image == null)
-            {
-                ModelState.AddModelError("Image", "Отсутствует изображение");
-            }
-            else if (image != null || image.Length > 0)
-            {
-                ModelState.Remove("Image");
-
-                using (var ms = new MemoryStream())
-                {
-                    image.CopyTo(ms);
-                    var fileBytes = ms.ToArray();
-                    ad.Image = fileBytes;
-                }
-
-                if (image.Length > 5242880)
-                    ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
-            }
+            string? imagePath = await ImageHelper.SaveImage(image, _webHost, this);
 
             Ad adResult = new Ad();
+            if (imagePath != null)
+                adResult.Image = imagePath;
+            else
+                ModelState.AddModelError("Image", "Не удалось загрузить изображение");
+
             if (ModelState.IsValid)
             {
                 adResult.UserName = User.Identity.Name;
                 adResult.CreateTime = DateTime.Now;
                 adResult.DropTime = DateTime.Now.AddDays(90);
                 adResult.Number = ad.Number;
-                adResult.Image = ad.Image;
                 adResult.Text = ad.Text;
                 _context.Add(adResult);
                 await _context.SaveChangesAsync();
@@ -159,6 +133,7 @@ namespace MyTestWebApp.Controllers
         public async Task<IActionResult> Edit([Required] Guid id)
         {
             var ad = await _context.Ads.FindAsync(id);
+
             if (ad == null)
             {
                 return NotFound();
@@ -169,99 +144,67 @@ namespace MyTestWebApp.Controllers
                 return RedirectToAction("Index");
             }
 
-            return PartialView(ad);
+            AdCreateModel model = new AdCreateModel()
+            {
+                Number = ad.Number,
+                Text = ad.Text
+            };
+
+            return PartialView(model);
         }
 
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, Ad ad, IFormFile image)
+        public async Task<IActionResult> Edit(Guid id, AdCreateModel ad, IFormFile image)
         {
-            var old = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == ad.AdId).ToList()[0];
-
-            //validation for image
-            System.Drawing.Image img;
-            bool imageIsVlalid;
-            try
-            {
-                if (image != null)
-                    img = System.Drawing.Image.FromStream(image.OpenReadStream());
-                imageIsVlalid = true;
-            }
-            catch (Exception e)
-            {
-                ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
-                imageIsVlalid = false;
-            }
-
-            if (image == null)
-            {
-                ModelState.AddModelError("Image", "Отсутствует изображение");
-            }
-            else if ((image != null || image.Length > 0) && imageIsVlalid)
-            {
-                ModelState.Remove("Image");
-
-                using (var ms = new MemoryStream())
-                {
-                    image.CopyTo(ms);
-                    var fileBytes = ms.ToArray();
-                    ad.Image = fileBytes;
-                }
-
-                if (image.Length > 5242880)
-                    ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
-            }
+            Ad adResult = new Ad();
+            string? newImage = null;
+            var old = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == id).ToList()[0];
 
             //old image return
             if (image == null)
             {
-                ad.Image = old.Image;
-                ModelState.Remove("Image");
+                adResult.Image = old.Image;
             }
             else if (image != null || image.Length > 0)
             {
-                using (var ms = new MemoryStream())
-                {
-                    image.CopyTo(ms);
-                    var fileBytes = ms.ToArray();
-                    ad.Image = fileBytes;
-                }
+                newImage = await ImageHelper.SaveImage(image, _webHost, this);
             }
 
-            //old data return
-            ad.DropTime = old.DropTime;
-            ad.CreateTime = old.CreateTime;
-            ad.Rating = old.Rating;
-            ad.UserName = old.UserName;
+            adResult.AdId = old.AdId;
+            adResult.DropTime = old.DropTime;
+            adResult.CreateTime = old.CreateTime;
+            adResult.Rating = old.Rating;
+            adResult.UserName = old.UserName;
+            adResult.Text = ad.Text;
+            adResult.Number = ad.Number;
 
-            if (User.Identity.Name != ad.UserName && !User.IsInRole("admin"))
+            if (User.Identity.Name != adResult.UserName && !User.IsInRole("admin"))
             {
-                return RedirectToAction("Index");
-            }
-
-            if (id != ad.AdId)
-            {
-                return NotFound();
+                ModelState.AddModelError("", "Только admin может вносить измнеия в чужие записи");
             }
 
             if (ModelState.IsValid)
             {
+
+                if (newImage != null)
+                {
+                    adResult.Image = newImage;
+                    ImageHelper.DeleteImage(old.Image,_webHost);
+                }
+
                 try
                 {
-                    _context.Update(ad);
+                    _context.Update(adResult);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception)
                 {
-                    if (!AdExists(ad.AdId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (newImage != null)
+                        ImageHelper.DeleteImage(newImage,_webHost);
+
+                    RedirectToAction("Index");
                 }
 
                 int count = _context.Ads.Count();
@@ -275,6 +218,10 @@ namespace MyTestWebApp.Controllers
 
                 return View("Index", model);
             }
+
+            if (newImage != null)
+                ImageHelper.DeleteImage(newImage,_webHost);  
+            
             return View(ad);
         }
 
@@ -308,6 +255,7 @@ namespace MyTestWebApp.Controllers
                 return RedirectToAction("Index");
             }
 
+            ImageHelper.DeleteImage(ad.Image, _webHost);
             _context.Ads.Remove(ad);
 
             await _context.SaveChangesAsync();
@@ -322,11 +270,6 @@ namespace MyTestWebApp.Controllers
             };
 
             return View("Index", model);
-        }
-
-        private bool AdExists(Guid id)
-        {
-            return _context.Ads.Any(e => e.AdId == id);
         }
 
         private IEnumerable<Ad> GetAdsOfPage(int page)
