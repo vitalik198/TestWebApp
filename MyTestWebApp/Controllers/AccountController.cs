@@ -12,15 +12,13 @@ namespace MyTestWebApp.Controllers
     [Authorize]
     public class AccountController : Controller
     {
-        private readonly UserManager<User> userManager;
-        private readonly SignInManager<User> signInManager;
-        private readonly RoleManager<IdentityRole> roleManager;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, RoleManager<IdentityRole> roleManager)
-        {
-            this.userManager = userManager;
-            this.signInManager = signInManager;
-            this.roleManager = roleManager;
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager) 
+        { 
+            this._userManager = userManager;
+            this._signInManager = signInManager;
         }
 
         [HttpGet]
@@ -57,14 +55,14 @@ namespace MyTestWebApp.Controllers
             if (ModelState.IsValid)
             {
                 User user = new User { Email = model.Email, UserName = model.UserName, Admin = model.IsAdmin };
-                var result = await userManager.CreateAsync(user, model.Password);
+                var result = await _userManager.CreateAsync(user, model.Password);
 
                 string role = model.IsAdmin ? "admin" : "user";
-                var result2 = await userManager.AddToRoleAsync(user, role);
+                var result2 = await _userManager.AddToRoleAsync(user, role);
 
                 if (result.Succeeded && result2.Succeeded)
                 {
-                    await signInManager.SignInAsync(user, false);
+                    await _signInManager.SignInAsync(user, false);
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -97,13 +95,13 @@ namespace MyTestWebApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = await userManager.FindByNameAsync(model.UserName);
+                User user = await _userManager.FindByNameAsync(model.UserName);
 
                 if (user != null)
                 {
-                    await signInManager.SignOutAsync();
+                    await _signInManager.SignOutAsync();
 
-                    var result = await signInManager.PasswordSignInAsync(user, model.Password, true, false);
+                    var result = await _signInManager.PasswordSignInAsync(user, model.Password, true, false);
                     if (result.Succeeded)
                     {
                         return RedirectToAction("Index", "Ads");
@@ -117,7 +115,7 @@ namespace MyTestWebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
-            await signInManager.SignOutAsync();
+            await _signInManager.SignOutAsync();
 
             return RedirectToAction("Index", "Account");
         }

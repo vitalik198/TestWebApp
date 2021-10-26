@@ -18,7 +18,7 @@ namespace MyTestWebApp.Controllers
 {
     public class AdsController : Controller
     {
-        private readonly int pageSize = 3;
+        private readonly int _pageSize = 3;
 
         private readonly ApplicationContext _context;
         private readonly UserManager<User> _userManager;
@@ -32,7 +32,7 @@ namespace MyTestWebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string? search, string? sort, int page = 1)
         {
-            IEnumerable<Ad> result =  _context.Ads;
+            IEnumerable<Ad> result = _context.Ads;
             var count = result.Count<Ad>();
 
             if (search != null && search.Length > 0)
@@ -56,16 +56,17 @@ namespace MyTestWebApp.Controllers
                     default:
                         break;
                 }
-           
-            var items = result.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            PageViewModel pageViewModel = new PageViewModel(count, page, pageSize);
+            var items = result.Skip((page - 1) * _pageSize).Take(_pageSize).ToList();
+
+            PageViewModel pageViewModel = new PageViewModel(count, page, _pageSize);
             IndexPaginationViewModel viewModel = new IndexPaginationViewModel
             {
                 PageViewModel = pageViewModel,
                 ads = items
             };
 
+            Environment.SetEnvironmentVariable("page", page.ToString());
             return View(viewModel);
         }
 
@@ -137,18 +138,19 @@ namespace MyTestWebApp.Controllers
                 adResult.Text = ad.Text;
                 _context.Add(adResult);
                 await _context.SaveChangesAsync();
-                var ads = await _context.Ads.ToListAsync();
+
+                int count = _context.Ads.Count();
                 int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+                var ads = GetAdsOfPage(page);
                 IndexPaginationViewModel model = new IndexPaginationViewModel()
                 {
                     ads = ads,
-                    PageViewModel = new PageViewModel(ads.Count, page, pageSize)
+                    PageViewModel = new PageViewModel(count, page, _pageSize)
                 };
 
-                return Json(new { isValid = true, url = @Url.Action("Index", "Ads", new { page = Environment.GetEnvironmentVariable("page") }) });
+                return View("Index", model);
             }
-
-            return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Create", ad) });
+            return View(ad);
         }
 
         [NoDirectAccess]
@@ -262,18 +264,18 @@ namespace MyTestWebApp.Controllers
                     }
                 }
 
-                var ads = await _context.Ads.ToListAsync();
+                int count = _context.Ads.Count();
                 int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+                var ads = GetAdsOfPage(page);
                 IndexPaginationViewModel model = new IndexPaginationViewModel()
                 {
                     ads = ads,
-                    PageViewModel = new PageViewModel(ads.Count, page, pageSize)
+                    PageViewModel = new PageViewModel(count, page, _pageSize)
                 };
 
-                return Json(new { isValid = true, url = @Url.Action("Index", "Ads", new { page = Environment.GetEnvironmentVariable("page") }) });
-
+                return View("Index", model);
             }
-            return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Edit", ad) });
+            return View(ad);
         }
 
         [Authorize]
@@ -309,20 +311,30 @@ namespace MyTestWebApp.Controllers
             _context.Ads.Remove(ad);
 
             await _context.SaveChangesAsync();
-            var ads = await _context.Ads.ToListAsync();
+
+            int count = _context.Ads.Count();
             int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+            var ads = GetAdsOfPage(page);
             IndexPaginationViewModel model = new IndexPaginationViewModel()
             {
                 ads = ads,
-                PageViewModel = new PageViewModel(ads.Count, page, pageSize)
+                PageViewModel = new PageViewModel(count, page, _pageSize)
             };
 
-            return Json(new { isValid = true, url = @Url.Action("Index", "Ads", new { page = Environment.GetEnvironmentVariable("page") }) });
+            return View("Index", model);
         }
 
         private bool AdExists(Guid id)
         {
             return _context.Ads.Any(e => e.AdId == id);
+        }
+
+        private IEnumerable<Ad> GetAdsOfPage(int page)
+        {
+            IEnumerable<Ad> result = _context.Ads;
+            result = result.Skip((page - 1) * _pageSize).Take(_pageSize).ToList();
+
+            return result;
         }
     }
 }
