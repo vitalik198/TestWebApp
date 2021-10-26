@@ -12,15 +12,13 @@ namespace MyTestWebApp.Controllers
     [ApiController]
     public class ApiAccountController : ControllerBase
     {
-        private readonly SignInManager<User> signInManager;
-        private readonly UserManager<User> userManager;
-        private readonly RoleManager<IdentityRole> roleManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
 
-        public ApiAccountController(SignInManager<User> signInManager, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+        public ApiAccountController(SignInManager<User> signInManager, UserManager<User> userManager)
         {
-            this.signInManager = signInManager;
-            this.userManager = userManager;
-            this.roleManager = roleManager;
+            this._signInManager = signInManager;
+            this._userManager = userManager;
         }
 
         /// <summary>
@@ -31,8 +29,8 @@ namespace MyTestWebApp.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] ViewLoginApiModel loginModel)
         {
-            User user = await userManager.FindByNameAsync(loginModel.UserName);
-            var result = await signInManager.PasswordSignInAsync(user, loginModel.Password, false, false);
+            User user = await _userManager.FindByNameAsync(loginModel.UserName);
+            var result = await _signInManager.PasswordSignInAsync(user, loginModel.Password, false, false);
             if (result.Succeeded)
                 return Ok();
             else
@@ -45,7 +43,7 @@ namespace MyTestWebApp.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            await signInManager.SignOutAsync();
+            await _signInManager.SignOutAsync();
             return Ok();
         }
 
@@ -60,10 +58,10 @@ namespace MyTestWebApp.Controllers
             if (ModelState.IsValid)
             {
                 User user = new User { Email = registerModel.Email, UserName = registerModel.UserName, Admin = registerModel.IsAdmin };
-                var result = await userManager.CreateAsync(user, registerModel.Password);
+                var result = await _userManager.CreateAsync(user, registerModel.Password);
 
                 string role = registerModel.IsAdmin ? "admin" : "user";
-                var result2 = await userManager.AddToRoleAsync(user, role);
+                var result2 = await _userManager.AddToRoleAsync(user, role);
 
                 if (result.Succeeded && result2.Succeeded)
                 {

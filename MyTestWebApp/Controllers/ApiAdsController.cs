@@ -17,29 +17,25 @@ namespace MyTestWebApp.Controllers
     [ApiController]
     public class ApiAdsController : ControllerBase
     {
-        private readonly ApplicationContext context;
-        private readonly UserManager<User> userManager;
-        private readonly SignInManager<User> signInManager;
+        private readonly ApplicationContext _context;
 
-        public ApiAdsController(ApplicationContext context, UserManager<User> userManager, SignInManager<User> signInManager)
+        public ApiAdsController(ApplicationContext context)
         {
-            this.context = context;
-            this.userManager = userManager;
-            this.signInManager = signInManager;
+            this._context = context;
         }
 
         // GET: api/<ApiAdsController>
         [HttpGet]
         public IAsyncEnumerable<Ad> Get()
         {
-            return context.Ads.AsAsyncEnumerable();
+            return _context.Ads.AsAsyncEnumerable();
         }
 
         // GET api/<ApiAdsController>/5
         [HttpGet("{id}")]
         public Task<Ad> Get(Guid id)
         {
-            return context.Ads.FirstOrDefaultAsync(x => x.AdId == id);
+            return _context.Ads.FirstOrDefaultAsync(x => x.AdId == id);
         }
 
         // POST api/<ApiAdsController>
@@ -83,8 +79,8 @@ namespace MyTestWebApp.Controllers
                 Image = value.Image
             };
 
-            context.Add(ad);
-            context.SaveChanges();
+            _context.Add(ad);
+            _context.SaveChanges();
 
             return Ok();
         }
@@ -104,7 +100,7 @@ namespace MyTestWebApp.Controllers
             Ad old;
             try
             {
-                old = context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == id).ToList()[0];
+                old = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == id).ToList()[0];
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -149,8 +145,8 @@ namespace MyTestWebApp.Controllers
             ad.Rating = old.Rating;
             ad.UserName = old.UserName;
 
-            context.Update(ad);
-            context.SaveChanges();
+            _context.Update(ad);
+            _context.SaveChanges();
 
             return Ok();
         }
@@ -170,7 +166,7 @@ namespace MyTestWebApp.Controllers
             Ad ad;
             try
             {
-                ad = context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == id).ToList()[0];
+                ad = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == id).ToList()[0];
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -185,8 +181,8 @@ namespace MyTestWebApp.Controllers
                 return BadRequest(ModelState);
             }
 
-            context.Remove(ad);
-            context.SaveChanges();
+            _context.Remove(ad);
+            _context.SaveChanges();
             return Ok();
         }
     }
