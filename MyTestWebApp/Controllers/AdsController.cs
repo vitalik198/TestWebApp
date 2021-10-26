@@ -32,30 +32,31 @@ namespace MyTestWebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string? search, string? sort, int page = 1)
         {
-            var result = await _context.Ads.ToListAsync();
+            IEnumerable<Ad> result =  _context.Ads;
+            var count = result.Count<Ad>();
+
             if (search != null && search.Length > 0)
-                result = result.Where(x => x.Text.ToLower().Contains(search.ToLower())).ToList();
+                result = result.Where(x => x.Text.ToLower().Contains(search.ToLower()));
 
             if (sort != null)
                 switch (sort)
                 {
                     case "number":
-                        result = result.OrderBy(x => x.Number).ToList();
+                        result = result.OrderBy(x => x.Number);
                         break;
                     case "text":
-                        result = result.OrderBy(x => x.Text).ToList();
+                        result = result.OrderBy(x => x.Text);
                         break;
                     case "rating":
-                        result = result.OrderBy(x => x.Rating).ToList();
+                        result = result.OrderBy(x => x.Rating);
                         break;
                     case "user":
-                        result = result.OrderBy(x => x.UserName).ToList();
+                        result = result.OrderBy(x => x.UserName);
                         break;
                     default:
                         break;
                 }
-
-            var count = result.Count;
+           
             var items = result.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
             PageViewModel pageViewModel = new PageViewModel(count, page, pageSize);
@@ -65,7 +66,6 @@ namespace MyTestWebApp.Controllers
                 ads = items
             };
 
-            Environment.SetEnvironmentVariable("page", page.ToString());
             return View(viewModel);
         }
 
