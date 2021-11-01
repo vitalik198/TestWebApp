@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using MyTestWebApp.Context;
 using MyTestWebApp.Helpers;
 using MyTestWebApp.Models;
+using MyTestWebApp.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -33,7 +34,6 @@ namespace MyTestWebApp.Controllers
         public async Task<IActionResult> Index(string? search, string? sort, int page = 1)
         {
             IEnumerable<Ad> result = _context.Ads;
-            var count = result.Count<Ad>();
 
             if (search != null && search.Length > 0)
                 result = result.Where(x => x.Text.ToLower().Contains(search.ToLower()));
@@ -57,7 +57,8 @@ namespace MyTestWebApp.Controllers
                         break;
                 }
 
-            var items = result.Skip((page - 1) * _pageSize).Take(_pageSize).ToList();
+            var count = result.Count<Ad>();
+            var items = await Task.FromResult(result.Skip((page - 1) * _pageSize).Take(_pageSize).ToList());
 
             PageViewModel pageViewModel = new PageViewModel(count, page, _pageSize);
             IndexPaginationViewModel viewModel = new IndexPaginationViewModel
@@ -79,7 +80,17 @@ namespace MyTestWebApp.Controllers
                 return NotFound();
             }
 
-            return View(ad);
+            AdDetailsModel result = new AdDetailsModel()
+            {
+                Number = ad.Number,
+                Text = ad.Text,
+                Image = ad.Image,
+                CreateTime = ad.CreateTime,
+                DropTime = ad.DropTime,
+                Rating = ad.Rating
+            };
+
+            return View(result);
         }
 
         [NoDirectAccess]
@@ -95,16 +106,19 @@ namespace MyTestWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AdCreateModel ad, IFormFile image)
         {
-            string? imagePath = await ImageHelper.SaveImage(image, _webHost, this);
-
-            Ad adResult = new Ad();
-            if (imagePath != null)
-                adResult.Image = imagePath;
-            else
-                ModelState.AddModelError("Image", "Не удалось загрузить изображение");
+           Ad adResult = new Ad();        
 
             if (ModelState.IsValid)
             {
+                string? imagePath = await ImageHelper.SaveImage(image, _webHost, this);
+                if (imagePath != null)
+                    adResult.Image = imagePath;
+                else
+                {
+                    ModelState.AddModelError("Image", "Не удалось загрузить изображение");
+                    return View(ad);
+                }
+
                 adResult.UserName = User.Identity.Name;
                 adResult.CreateTime = DateTime.Now;
                 adResult.DropTime = DateTime.Now.AddDays(90);
@@ -115,7 +129,7 @@ namespace MyTestWebApp.Controllers
 
                 int count = _context.Ads.Count();
                 int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
-                var ads = GetAdsOfPage(page);
+                var ads = await GetAdsOfPage(page);
                 IndexPaginationViewModel model = new IndexPaginationViewModel()
                 {
                     ads = ads,
@@ -160,7 +174,7 @@ namespace MyTestWebApp.Controllers
         {
             Ad adResult = new Ad();
             string? newImage = null;
-            var old = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == id).ToList()[0];
+            var old = await _context.Ads.AsNoTracking<Ad>().SingleOrDefaultAsync(x => x.AdId == id);
 
             //old image return
             if (image == null)
@@ -191,7 +205,7 @@ namespace MyTestWebApp.Controllers
                 if (newImage != null)
                 {
                     adResult.Image = newImage;
-                    ImageHelper.DeleteImage(old.Image,_webHost);
+                    ImageHelper.DeleteImage(old.Image, _webHost);
                 }
 
                 try
@@ -202,7 +216,7 @@ namespace MyTestWebApp.Controllers
                 catch (Exception)
                 {
                     if (newImage != null)
-                        ImageHelper.DeleteImage(newImage,_webHost);
+                        ImageHelper.DeleteImage(newImage, _webHost);
 
                     RedirectToAction("Index");
                 }
@@ -212,7 +226,7 @@ namespace MyTestWebApp.Controllers
                 var ads = GetAdsOfPage(page);
                 IndexPaginationViewModel model = new IndexPaginationViewModel()
                 {
-                    ads = ads,
+                    ads = await ads,
                     PageViewModel = new PageViewModel(count, page, _pageSize)
                 };
 
@@ -220,8 +234,8 @@ namespace MyTestWebApp.Controllers
             }
 
             if (newImage != null)
-                ImageHelper.DeleteImage(newImage,_webHost);  
-            
+                ImageHelper.DeleteImage(newImage, _webHost);
+
             return View(ad);
         }
 
@@ -262,7 +276,7 @@ namespace MyTestWebApp.Controllers
 
             int count = _context.Ads.Count();
             int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
-            var ads = GetAdsOfPage(page);
+            var ads = await GetAdsOfPage(page);
             IndexPaginationViewModel model = new IndexPaginationViewModel()
             {
                 ads = ads,
@@ -272,10 +286,10 @@ namespace MyTestWebApp.Controllers
             return View("Index", model);
         }
 
-        private IEnumerable<Ad> GetAdsOfPage(int page)
+        private async Task<IEnumerable<Ad>> GetAdsOfPage(int page)
         {
             IEnumerable<Ad> result = _context.Ads;
-            result = result.Skip((page - 1) * _pageSize).Take(_pageSize).ToList();
+            result = await Task.FromResult( result.Skip((page - 1) * _pageSize).Take(_pageSize).ToList());
 
             return result;
         }
