@@ -14,6 +14,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Remove="wwwroot\Files\Images\2349f047-6ad8-4362-b77f-c88da84ef275les-noch-tuman.jpg" />
 	  <Content Remove="wwwroot\Files\Images\3baeab0c-9146-40b8-81d2-25ca4eb798651430065178_152294143.jpg" />
 	  <Content Remove="wwwroot\Files\Images\459cba44-4d00-4ffd-a746-43f09aac09af350570-admin.jpg" />
 	  <Content Remove="wwwroot\Files\Images\8ea263d7-38c2-4cbf-b0e3-0e81c7eea9be1c3fe77c185b56a11fffeca3f9c78721.jpeg" />

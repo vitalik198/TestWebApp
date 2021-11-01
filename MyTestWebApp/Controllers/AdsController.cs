@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using MyTestWebApp.Context;
 using MyTestWebApp.Helpers;
 using MyTestWebApp.Models;
@@ -106,7 +107,7 @@ namespace MyTestWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AdCreateModel ad, IFormFile image)
         {
-           Ad adResult = new Ad();        
+            Ad adResult = new Ad();
 
             if (ModelState.IsValid)
             {
@@ -208,18 +209,28 @@ namespace MyTestWebApp.Controllers
                     ImageHelper.DeleteImage(old.Image, _webHost);
                 }
 
-                try
+                using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Snapshot))
                 {
-                    _context.Update(adResult);
-                    await _context.SaveChangesAsync();
-                }
-                catch (Exception)
-                {
-                    if (newImage != null)
-                        ImageHelper.DeleteImage(newImage, _webHost);
+                    try
+                    {
+                        _context.Update(adResult);
+                        await _context.SaveChangesAsync();
 
-                    RedirectToAction("Index");
+                        transaction.Commit();
+                        await transaction.DisposeAsync();
+                    }
+                    catch (Exception)
+                    {
+                        if (newImage != null)
+                            ImageHelper.DeleteImage(newImage, _webHost);
+
+                        transaction.Rollback();
+                        await transaction.DisposeAsync();
+
+                        RedirectToAction("Index");
+                    }
                 }
+
 
                 int count = _context.Ads.Count();
                 int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
@@ -289,7 +300,7 @@ namespace MyTestWebApp.Controllers
         private async Task<IEnumerable<Ad>> GetAdsOfPage(int page)
         {
             IEnumerable<Ad> result = _context.Ads;
-            result = await Task.FromResult( result.Skip((page - 1) * _pageSize).Take(_pageSize).ToList());
+            result = await Task.FromResult(result.Skip((page - 1) * _pageSize).Take(_pageSize).ToList());
 
             return result;
         }
