@@ -34,6 +34,8 @@ namespace MyTestWebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string? search, string? sort, int page = 1)
         {
+            //throw new Exception("A test uncatched exception");
+
             IEnumerable<Ad> result = _context.Ads;
 
             if (search != null && search.Length > 0)
@@ -107,11 +109,11 @@ namespace MyTestWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AdCreateModel ad, IFormFile image)
         {
-            Ad adResult = new Ad();
-
             if (ModelState.IsValid)
             {
-                string? imagePath = await ImageHelper.SaveImage(image, _webHost, this);
+                Ad adResult = new Ad();
+
+                var imagePath = await ImageHelper.SaveImage(image, _webHost, this);
                 if (imagePath != null)
                     adResult.Image = imagePath;
                 else
@@ -173,35 +175,35 @@ namespace MyTestWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, AdCreateModel ad, IFormFile image)
         {
-            Ad adResult = new Ad();
-            string? newImage = null;
-            var old = await _context.Ads.AsNoTracking<Ad>().SingleOrDefaultAsync(x => x.AdId == id);
-
-            //old image return
-            if (image == null)
-            {
-                adResult.Image = old.Image;
-            }
-            else if (image != null || image.Length > 0)
-            {
-                newImage = await ImageHelper.SaveImage(image, _webHost, this);
-            }
-
-            adResult.AdId = old.AdId;
-            adResult.DropTime = old.DropTime;
-            adResult.CreateTime = old.CreateTime;
-            adResult.Rating = old.Rating;
-            adResult.UserName = old.UserName;
-            adResult.Text = ad.Text;
-            adResult.Number = ad.Number;
-
-            if (User.Identity.Name != adResult.UserName && !User.IsInRole("admin"))
-            {
-                ModelState.AddModelError("", "Только admin может вносить измнеия в чужие записи");
-            }
-
             if (ModelState.IsValid)
             {
+                Ad adResult = new Ad();
+                string? newImage = null;
+                var old = await _context.Ads.AsNoTracking<Ad>().SingleOrDefaultAsync(x => x.AdId == id);
+
+                //old image return
+                if (image == null)
+                {
+                    adResult.Image = old.Image;
+                }
+                else if (image != null || image.Length > 0)
+                {
+                    newImage = await ImageHelper.SaveImage(image, _webHost, this);
+                }
+
+                adResult.AdId = old.AdId;
+                adResult.DropTime = old.DropTime;
+                adResult.CreateTime = old.CreateTime;
+                adResult.Rating = old.Rating;
+                adResult.UserName = old.UserName;
+                adResult.Text = ad.Text;
+                adResult.Number = ad.Number;
+
+                if (User.Identity.Name != adResult.UserName && !User.IsInRole("admin"))
+                {
+                    ModelState.AddModelError("", "Только admin может вносить измнеия в чужие записи");
+                    return BadRequest(ModelState);
+                }
 
                 if (newImage != null)
                 {
@@ -232,8 +234,8 @@ namespace MyTestWebApp.Controllers
                 }
 
 
-                int count = _context.Ads.Count();
-                int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+                var count = await _context.Ads.CountAsync();
+                var page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
                 var ads = GetAdsOfPage(page);
                 IndexPaginationViewModel model = new IndexPaginationViewModel()
                 {
@@ -243,9 +245,6 @@ namespace MyTestWebApp.Controllers
 
                 return View("Index", model);
             }
-
-            if (newImage != null)
-                ImageHelper.DeleteImage(newImage, _webHost);
 
             return View(ad);
         }
