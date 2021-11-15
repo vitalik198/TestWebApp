@@ -1,24 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace MyTestWebApp.Models
+namespace MyTestWebApp.ViewModels
 {
-    [Bind(include: "AdId,Number,Text")]
-    public class Ad
+    public class AdDetailsModel
     {
-        [Key]
-        public Guid AdId { get; set; }
-
-        [Required]
         [Display(Name = "Номер")]
         public int Number { get; set; }
 
-        [Display(Name = "Пользователь")]
-        public string UserName { get; set; }
-
-        [Required]
-        [DataType(DataType.MultilineText)]
         [Display(Name = "Информация")]
         public string Text { get; set; }
 

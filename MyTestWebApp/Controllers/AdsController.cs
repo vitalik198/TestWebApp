@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using MyTestWebApp.Context;
 using MyTestWebApp.Helpers;
 using MyTestWebApp.Models;
+using MyTestWebApp.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,47 +20,50 @@ namespace MyTestWebApp.Controllers
 {
     public class AdsController : Controller
     {
-        private readonly int pageSize = 3;
+        private readonly int _pageSize = 3;
 
         private readonly ApplicationContext _context;
-        private readonly UserManager<User> _userManager;
+        private readonly IWebHostEnvironment _webHost;
 
-        public AdsController(ApplicationContext context, UserManager<User> userManager)
+        public AdsController(ApplicationContext context, IWebHostEnvironment webHost)
         {
             _context = context;
-            _userManager = userManager;
+            _webHost = webHost;
         }
 
-        [HttpGet()]
+        [HttpGet]
         public async Task<IActionResult> Index(string? search, string? sort, int page = 1)
         {
-            var result = await _context.Ads.ToListAsync();
+            //throw new Exception("A test uncatched exception");
+
+            IEnumerable<Ad> result = _context.Ads;
+
             if (search != null && search.Length > 0)
-                result = result.Where(x => x.Text.ToLower().Contains(search.ToLower())).ToList();
+                result = result.Where(x => x.Text.ToLower().Contains(search.ToLower()));
 
             if (sort != null)
                 switch (sort)
                 {
                     case "number":
-                        result = result.OrderBy(x => x.Number).ToList();
+                        result = result.OrderBy(x => x.Number);
                         break;
                     case "text":
-                        result = result.OrderBy(x => x.Text).ToList();
+                        result = result.OrderBy(x => x.Text);
                         break;
                     case "rating":
-                        result = result.OrderBy(x => x.Rating).ToList();
+                        result = result.OrderBy(x => x.Rating);
                         break;
                     case "user":
-                        result = result.OrderBy(x => x.UserName).ToList();
+                        result = result.OrderBy(x => x.UserName);
                         break;
                     default:
                         break;
                 }
 
-            var count = result.Count;
-            var items = result.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var count = result.Count<Ad>();
+            var items = await Task.FromResult(result.Skip((page - 1) * _pageSize).Take(_pageSize).ToList());
 
-            PageViewModel pageViewModel = new PageViewModel(count, page, pageSize);
+            PageViewModel pageViewModel = new PageViewModel(count, page, _pageSize);
             IndexPaginationViewModel viewModel = new IndexPaginationViewModel
             {
                 PageViewModel = pageViewModel,
@@ -68,25 +74,31 @@ namespace MyTestWebApp.Controllers
             return View(viewModel);
         }
 
-        public async Task<IActionResult> Details(Guid? id)
+        [HttpGet]
+        public async Task<IActionResult> Details([Required] Guid id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ad = await _context.Ads
-                .FirstOrDefaultAsync(m => m.AdId == id);
+            var ad = await _context.Ads.FirstOrDefaultAsync(m => m.AdId == id);
             if (ad == null)
             {
                 return NotFound();
             }
 
-            return View(ad);
+            AdDetailsModel result = new AdDetailsModel()
+            {
+                Number = ad.Number,
+                Text = ad.Text,
+                Image = ad.Image,
+                CreateTime = ad.CreateTime,
+                DropTime = ad.DropTime,
+                Rating = ad.Rating
+            };
+
+            return View(result);
         }
 
         [NoDirectAccess]
         [Authorize]
+        [HttpGet]
         public IActionResult Create()
         {
             return PartialView();
@@ -97,74 +109,48 @@ namespace MyTestWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AdCreateModel ad, IFormFile image)
         {
-            //validation for image
-            System.Drawing.Image img;
-            try
-            {
-                if (image != null)
-                    img = System.Drawing.Image.FromStream(image.OpenReadStream());
-            }
-            catch (Exception e)
-            {
-                ModelState.AddModelError("", e.HelpLink);
-                ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
-            }
-
-            if (image == null)
-            {
-                ModelState.AddModelError("Image", "Отсутствует изображение");
-            }
-            else if (image != null || image.Length > 0)
-            {
-                ModelState.Remove("Image");
-
-                using (var ms = new MemoryStream())
-                {
-                    image.CopyTo(ms);
-                    var fileBytes = ms.ToArray();
-                    ad.Image = fileBytes;
-                }
-
-                if (image.Length > 5242880)
-                    ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
-            }
-
-            Ad adResult = new Ad();
             if (ModelState.IsValid)
             {
+                Ad adResult = new Ad();
+
+                var imagePath = await ImageHelper.SaveImage(image, _webHost, this);
+                if (imagePath != null)
+                    adResult.Image = imagePath;
+                else
+                {
+                    ModelState.AddModelError("Image", "Не удалось загрузить изображение");
+                    return View(ad);
+                }
+
                 adResult.UserName = User.Identity.Name;
                 adResult.CreateTime = DateTime.Now;
                 adResult.DropTime = DateTime.Now.AddDays(90);
-                adResult.AdId = ad.AdId;
                 adResult.Number = ad.Number;
-                adResult.Image = ad.Image;
                 adResult.Text = ad.Text;
                 _context.Add(adResult);
                 await _context.SaveChangesAsync();
-                var ads = await _context.Ads.ToListAsync();
+
+                int count = _context.Ads.Count();
                 int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+                var ads = await GetAdsOfPage(page);
                 IndexPaginationViewModel model = new IndexPaginationViewModel()
                 {
                     ads = ads,
-                    PageViewModel = new PageViewModel(ads.Count, page, pageSize)
+                    PageViewModel = new PageViewModel(count, page, _pageSize)
                 };
 
-                return Json(new { isValid = true, url = @Url.Action("Index", "Ads", new { page = Environment.GetEnvironmentVariable("page") }) });
+                return View("Index", model);
             }
-
-            return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Create", ad) });
+            return View(ad);
         }
 
         [NoDirectAccess]
         [Authorize]
-        public async Task<IActionResult> Edit(Guid? id)
+        [HttpGet]
+        public async Task<IActionResult> Edit([Required] Guid id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var ad = await _context.Ads.FindAsync(id);
+
             if (ad == null)
             {
                 return NotFound();
@@ -175,126 +161,99 @@ namespace MyTestWebApp.Controllers
                 return RedirectToAction("Index");
             }
 
-            return PartialView(ad);
+            AdCreateModel model = new AdCreateModel()
+            {
+                Number = ad.Number,
+                Text = ad.Text
+            };
+
+            return PartialView(model);
         }
 
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, Ad ad, IFormFile image)
+        public async Task<IActionResult> Edit(Guid id, AdCreateModel ad, IFormFile image)
         {
-            var old = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == ad.AdId).ToList()[0];
-
-            //validation for image
-            System.Drawing.Image img;
-            bool imageIsVlalid;
-            try
-            {
-                if (image != null)
-                    img = System.Drawing.Image.FromStream(image.OpenReadStream());
-                imageIsVlalid = true;
-            }
-            catch (Exception e)
-            {
-                ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
-                imageIsVlalid = false;
-            }
-
-            if (image == null)
-            {
-                ModelState.AddModelError("Image", "Отсутствует изображение");
-            }
-            else if ((image != null || image.Length > 0) && imageIsVlalid)
-            {
-                ModelState.Remove("Image");
-
-                using (var ms = new MemoryStream())
-                {
-                    image.CopyTo(ms);
-                    var fileBytes = ms.ToArray();
-                    ad.Image = fileBytes;
-                }
-
-                if (image.Length > 5242880)
-                    ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
-            }
-
-            //old image return
-            if (image == null)
-            {
-                ad.Image = old.Image;
-                ModelState.Remove("Image");
-            }
-            else if (image != null || image.Length > 0)
-            {
-                using (var ms = new MemoryStream())
-                {
-                    image.CopyTo(ms);
-                    var fileBytes = ms.ToArray();
-                    ad.Image = fileBytes;
-                }
-            }
-
-            //old data return
-            ad.DropTime = old.DropTime;
-            ad.CreateTime = old.CreateTime;
-            ad.Rating = old.Rating;
-            ad.UserName = old.UserName;
-
-            if (User.Identity.Name != ad.UserName && !User.IsInRole("admin"))
-            {
-                return RedirectToAction("Index");
-            }
-
-            if (id != ad.AdId)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                try
+                Ad adResult = new Ad();
+                string? newImage = null;
+                var old = await _context.Ads.AsNoTracking<Ad>().SingleOrDefaultAsync(x => x.AdId == id);
+
+                //old image return
+                if (image == null)
                 {
-                    _context.Update(ad);
-                    await _context.SaveChangesAsync();
+                    adResult.Image = old.Image;
                 }
-                catch (DbUpdateConcurrencyException)
+                else if (image != null || image.Length > 0)
                 {
-                    if (!AdExists(ad.AdId))
+                    newImage = await ImageHelper.SaveImage(image, _webHost, this);
+                }
+
+                adResult.AdId = old.AdId;
+                adResult.DropTime = old.DropTime;
+                adResult.CreateTime = old.CreateTime;
+                adResult.Rating = old.Rating;
+                adResult.UserName = old.UserName;
+                adResult.Text = ad.Text;
+                adResult.Number = ad.Number;
+
+                if (User.Identity.Name != adResult.UserName && !User.IsInRole("admin"))
+                {
+                    ModelState.AddModelError("", "Только admin может вносить измнеия в чужие записи");
+                    return BadRequest(ModelState);
+                }
+
+                if (newImage != null)
+                {
+                    adResult.Image = newImage;
+                    ImageHelper.DeleteImage(old.Image, _webHost);
+                }
+
+                using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Snapshot))
+                {
+                    try
                     {
-                        return NotFound();
+                        _context.Update(adResult);
+                        await _context.SaveChangesAsync();
+
+                        transaction.Commit();
+                        await transaction.DisposeAsync();
                     }
-                    else
+                    catch (Exception)
                     {
-                        throw;
+                        if (newImage != null)
+                            ImageHelper.DeleteImage(newImage, _webHost);
+
+                        transaction.Rollback();
+                        await transaction.DisposeAsync();
+
+                        RedirectToAction("Index");
                     }
                 }
 
-                var ads = await _context.Ads.ToListAsync();
-                int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+
+                var count = await _context.Ads.CountAsync();
+                var page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+                var ads = GetAdsOfPage(page);
                 IndexPaginationViewModel model = new IndexPaginationViewModel()
                 {
-                    ads = ads,
-                    PageViewModel = new PageViewModel(ads.Count, page, pageSize)
+                    ads = await ads,
+                    PageViewModel = new PageViewModel(count, page, _pageSize)
                 };
 
-                return Json(new { isValid = true,url= @Url.Action("Index","Ads",new{page=Environment.GetEnvironmentVariable("page")}) });
-
+                return View("Index", model);
             }
-            return Json(new { isValid = false, html = RazorConverter.RenderRazorViewToString(this, "Edit", ad) });
+
+            return View(ad);
         }
 
         [Authorize]
-        // GET: Ads/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        [HttpGet]
+        public async Task<IActionResult> Delete([Required] Guid id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ad = await _context.Ads
-                .FirstOrDefaultAsync(m => m.AdId == id);
+            var ad = await _context.Ads.FirstOrDefaultAsync(m => m.AdId == id);
             if (ad == null)
             {
                 return NotFound();
@@ -320,23 +279,29 @@ namespace MyTestWebApp.Controllers
                 return RedirectToAction("Index");
             }
 
+            ImageHelper.DeleteImage(ad.Image, _webHost);
             _context.Ads.Remove(ad);
 
             await _context.SaveChangesAsync();
-            var ads = await _context.Ads.ToListAsync();
+
+            int count = _context.Ads.Count();
             int page = Convert.ToInt32(Environment.GetEnvironmentVariable("page"));
+            var ads = await GetAdsOfPage(page);
             IndexPaginationViewModel model = new IndexPaginationViewModel()
             {
                 ads = ads,
-                PageViewModel = new PageViewModel(ads.Count, page, pageSize)
+                PageViewModel = new PageViewModel(count, page, _pageSize)
             };
 
-            return Json(new { isValid = true, url = @Url.Action("Index", "Ads", new { page = Environment.GetEnvironmentVariable("page") }) });
+            return View("Index", model);
         }
 
-        private bool AdExists(Guid id)
+        private async Task<IEnumerable<Ad>> GetAdsOfPage(int page)
         {
-            return _context.Ads.Any(e => e.AdId == id);
+            IEnumerable<Ad> result = _context.Ads;
+            result = await Task.FromResult(result.Skip((page - 1) * _pageSize).Take(_pageSize).ToList());
+
+            return result;
         }
     }
 }

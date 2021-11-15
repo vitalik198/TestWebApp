@@ -1,4 +1,4 @@
-﻿@model MyTestWebApp.Models.Ad
+﻿@model MyTestWebApp.Models.AdCreateModel
 
 @{
     Layout = null;
@@ -8,7 +8,6 @@
     <div class="col-md-10">
         <form asp-action="Edit" method="post" enctype="multipart/form-data" onsubmit="return editInPopUp(this);">
             <div asp-validation-summary="ModelOnly"  class="text-danger"></div>
-            <input type="hidden" asp-for="AdId" />
             <div class="form-group">
                 <label asp-for="Number" class="control-label"></label>
                 <input asp-for="Number" class="form-control" />
