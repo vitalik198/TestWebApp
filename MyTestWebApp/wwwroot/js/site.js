@@ -40,11 +40,11 @@ createInPopUp = form => {
             contentType: false,
             processData: false,
             success: function (res) {
-                if (res.isValid) {
-                    updateIndex(res.url);
-                    closePopUp();;
+                if ($(res).find("#view-all").length) {
+                    closePopUp();
+                    $("#view-all").html($(res).find("#view-all"));
                 } else {
-                    $('#form-modal .modal-body').html(res.html);
+                    $('#form-modal .modal-body').html(res);
                 }
             },
             error: function (err) {
@@ -66,8 +66,8 @@ deleteInPopUp = form => {
             contentType: false,
             processData: false,
             success: function (res) {
-                updateIndex(res.url);
-                closePopUp();;
+                closePopUp();
+                $("#view-all").html($(res).find("#view-all"));
             },
             error: function (err) {
                 console.log(err);
@@ -88,11 +88,11 @@ editInPopUp = form => {
             contentType: false,
             processData: false,
             success: function (res) {
-                if (res.isValid) {
-                    updateIndex(res.url);
-                    closePopUp();;
+                if ($(res).find("#view-all").length) {
+                    closePopUp();
+                    $("#view-all").html($(res).find("#view-all"));
                 } else {
-                    $('#form-modal .modal-body').html(res.html);
+                    $('#form-modal .modal-body').html(res);
                 }
             },
             error: function (err) {
