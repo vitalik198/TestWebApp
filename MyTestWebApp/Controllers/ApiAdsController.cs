@@ -2,15 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyTestWebApp.Context;
-using MyTestWebApp.Helpers;
 using MyTestWebApp.Models;
-using MyTestWebApp.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,33 +17,34 @@ namespace MyTestWebApp.Controllers
     [ApiController]
     public class ApiAdsController : ControllerBase
     {
-        private readonly ApplicationContext _context;
-        private readonly IWebHostEnvironment _webHost;
+        private readonly ApplicationContext context;
+        private readonly UserManager<User> userManager;
+        private readonly SignInManager<User> signInManager;
 
-        public ApiAdsController(ApplicationContext context, IWebHostEnvironment webHost)
+        public ApiAdsController(ApplicationContext context, UserManager<User> userManager, SignInManager<User> signInManager)
         {
-            _context = context;
-            _webHost = webHost;
+            this.context = context;
+            this.userManager = userManager;
+            this.signInManager = signInManager;
         }
-
 
         // GET: api/<ApiAdsController>
         [HttpGet]
         public IAsyncEnumerable<Ad> Get()
         {
-            return _context.Ads.AsAsyncEnumerable();
+            return context.Ads.AsAsyncEnumerable();
         }
 
         // GET api/<ApiAdsController>/5
         [HttpGet("{id}")]
         public Task<Ad> Get(Guid id)
         {
-            return _context.Ads.FirstOrDefaultAsync(x => x.AdId == id);
+            return context.Ads.FirstOrDefaultAsync(x => x.AdId == id);
         }
 
         // POST api/<ApiAdsController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromForm] AdCreateApiModel value)
+        public IActionResult Post([FromBody] AdCreateModel value)
         {
             //authorization check
             if (!User.Identity.IsAuthenticated)
@@ -55,7 +53,18 @@ namespace MyTestWebApp.Controllers
                 return BadRequest(ModelState);
             }
 
-            string image = await ImageHelper.SaveImage(value.Image, _webHost,this);
+            //image validation
+            try
+            {
+                var img = System.Drawing.Image.FromStream(new MemoryStream(value.Image));
+                if (value.Image.Length > 5242880)
+                    ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
+            }
+            catch
+            {
+                ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
+                return BadRequest(ModelState);
+            }
 
             //model state validation
             if (!ModelState.IsValid)
@@ -65,25 +74,28 @@ namespace MyTestWebApp.Controllers
 
             Ad ad = new Ad()
             {
+                AdId = value.AdId,
                 Number = value.Number,
                 Text = value.Text,
                 UserName = User.Identity.Name,
                 CreateTime = DateTime.Now,
                 DropTime = DateTime.Now.AddDays(90),
                 Rating = 0,
-                Image = image
+                Image = value.Image
             };
 
-            _context.Add(ad);
-            _context.SaveChanges();
+            context.Add(ad);
+            context.SaveChanges();
 
             return Ok();
         }
 
         // PUT api/<ApiAdsController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromForm] AdEditApiModel value)
+        public IActionResult Put(Guid id, [FromBody] AdCreateModel value)
         {
+            value.AdId = id;
+
             //authorization check
             if (!User.Identity.IsAuthenticated)
             {
@@ -95,7 +107,7 @@ namespace MyTestWebApp.Controllers
             Ad old;
             try
             {
-                old = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == id).ToList()[0];
+                old = context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == id).ToList()[0];
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -110,16 +122,22 @@ namespace MyTestWebApp.Controllers
                 return BadRequest(ModelState);
             }
 
-            //image check
-            string? newImage = null;
-            if (value.Image!=null)
-                newImage = await ImageHelper.SaveImage(value.Image, _webHost, this);
+            //image validation
+            try
+            {
+                var img = System.Drawing.Image.FromStream(new MemoryStream(value.Image));
+                if (value.Image.Length > 5242880)
+                    ModelState.AddModelError("Image", "Картинка не должна быть больше 5 мб");
+            }
+            catch
+            {
+                ModelState.AddModelError("Image", "Загруженный файл не является изображением или поврежден");
+                return BadRequest(ModelState);
+            }
 
             //model state validation
             if (!ModelState.IsValid)
             {
-                if (newImage != null)
-                    ImageHelper.DeleteImage(newImage,_webHost);
                 return BadRequest(ModelState);
             }
 
@@ -128,21 +146,14 @@ namespace MyTestWebApp.Controllers
             ad.AdId = id;
             ad.Text = value.Text;
             ad.Number = value.Number;
+            ad.Image = value.Image;
             ad.CreateTime = old.CreateTime;
             ad.DropTime = old.DropTime;
             ad.Rating = old.Rating;
             ad.UserName = old.UserName;
 
-            if (newImage == null)
-                ad.Image = old.Image;
-            else
-            {
-                ad.Image = newImage;
-                ImageHelper.DeleteImage(old.Image,_webHost);
-            }
-
-            _context.Update(ad);
-            _context.SaveChanges();
+            context.Update(ad);
+            context.SaveChanges();
 
             return Ok();
         }
@@ -162,7 +173,7 @@ namespace MyTestWebApp.Controllers
             Ad ad;
             try
             {
-                ad = _context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == id).ToList()[0];
+                ad = context.Ads.AsNoTracking<Ad>().Where(x => x.AdId == id).ToList()[0];
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -177,9 +188,8 @@ namespace MyTestWebApp.Controllers
                 return BadRequest(ModelState);
             }
 
-            ImageHelper.DeleteImage(ad.Image,_webHost);
-            _context.Remove(ad);
-            _context.SaveChanges();
+            context.Remove(ad);
+            context.SaveChanges();
             return Ok();
         }
     }

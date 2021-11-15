@@ -14,16 +14,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Remove="wwwroot\Files\Images\2349f047-6ad8-4362-b77f-c88da84ef275les-noch-tuman.jpg" />
-	  <Content Remove="wwwroot\Files\Images\3baeab0c-9146-40b8-81d2-25ca4eb798651430065178_152294143.jpg" />
-	  <Content Remove="wwwroot\Files\Images\459cba44-4d00-4ffd-a746-43f09aac09af350570-admin.jpg" />
-	  <Content Remove="wwwroot\Files\Images\8ea263d7-38c2-4cbf-b0e3-0e81c7eea9be1c3fe77c185b56a11fffeca3f9c78721.jpeg" />
-	  <Content Remove="wwwroot\Files\Images\ac82abe0-09a6-4c7f-8f98-32aacbf032f11680.jpg" />
-	  <Content Remove="wwwroot\Files\Images\ca1a9852-d6d8-41a6-97a4-2914ffa88632dark-souls-3-dark-souls-iii-68.jpg" />
-	</ItemGroup>
-
-
-	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.11" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
@@ -39,11 +29,6 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.2" />
 		<PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.2.2" />
 		<PackageReference Include="System.Drawing.Common" Version="5.0.2" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="wwwroot\Files\" />
-	  <Folder Include="wwwroot\Files\Images\" />
 	</ItemGroup>
 
 </Project>
