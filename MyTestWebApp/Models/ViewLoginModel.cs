@@ -13,5 +13,7 @@ namespace MyTestWebApp.Models
         [DataType(DataType.Password)]
         [Display(Name = "Пароль")]
         public string Password { get; set; }
+
+        public string? ReturnUrl { get; set; }
     }
 }

@@ -5,6 +5,9 @@ namespace MyTestWebApp.Models
 {
     public class AdCreateModel
     {
+        [Key]
+        public Guid AdId { get; set; }
+
         [Required]
         [Display(Name = "Номер")]
         public int Number { get; set; }
@@ -14,6 +17,12 @@ namespace MyTestWebApp.Models
         [Display(Name = "Информация")]
         public string Text { get; set; }
 
-        public string Image { get; set; }
+        /// <summary>
+        ///  must be base64 bytes array
+        /// </summary>
+        [Required]
+        [DataType(DataType.Upload)]
+        [Display(Name = "Фото")]
+        public byte[] Image { get; set; }
     }
 }

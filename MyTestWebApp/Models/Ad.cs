@@ -22,8 +22,13 @@ namespace MyTestWebApp.Models
         [Display(Name = "Информация")]
         public string Text { get; set; }
 
+        /// <summary>
+        /// must be base64 bytes array
+        /// </summary>
+        [Required]
+        [DataType(DataType.Upload)]
         [Display(Name = "Фото")]
-        public string Image { get; set; }
+        public byte[] Image { get; set; }
 
         [Display(Name = "Рейтинг")]
         public int Rating { get; set; }

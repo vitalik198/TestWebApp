@@ -16,7 +16,7 @@ namespace MyTestWebApp.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.11")
+                .HasAnnotation("ProductVersion", "5.0.10")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -44,22 +44,6 @@ namespace MyTestWebApp.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "6ce15a2d-75cb-4bf9-b351-078d3fa03f16",
-                            ConcurrencyStamp = "135aa4d9-a8af-4ab8-845c-c1a0f33d1a3f",
-                            Name = "user",
-                            NormalizedName = "USER"
-                        },
-                        new
-                        {
-                            Id = "9a576a0a-8311-4f2a-83e3-c700853ed38f",
-                            ConcurrencyStamp = "aae9b763-30ef-4e8e-883e-fa7427f080a5",
-                            Name = "admin",
-                            NormalizedName = "ADMIN"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -178,8 +162,9 @@ namespace MyTestWebApp.Migrations
                     b.Property<DateTime>("DropTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("Image")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<int>("Number")
                         .HasColumnType("int");
