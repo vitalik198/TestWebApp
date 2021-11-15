@@ -6,12 +6,12 @@ namespace MyTestWebApp.Models
     {
         [Required]
         [DataType(DataType.Text)]
-        [Display(Name = "Имя пользователя")]
+        [Display(Name = "User name")]
         public string UserName { get; set; }
 
         [Required]
         [DataType(DataType.Password)]
-        [Display(Name = "Пароль")]
+        [Display(Name = "Password")]
         public string Password { get; set; }
     }
 }

@@ -5,22 +5,22 @@ namespace MyTestWebApp.ViewModels
 {
     public class AdDetailsModel
     {
-        [Display(Name = "Номер")]
+        [Display(Name = "Number")]
         public int Number { get; set; }
 
-        [Display(Name = "Информация")]
+        [Display(Name = "Info")]
         public string Text { get; set; }
 
-        [Display(Name = "Фото")]
+        [Display(Name = "Photo")]
         public string Image { get; set; }
 
-        [Display(Name = "Рейтинг")]
+        [Display(Name = "Rating")]
         public int Rating { get; set; }
 
-        [Display(Name = "Дата создания")]
+        [Display(Name = "Date of creation")]
         public DateTime CreateTime { get; set; }
 
-        [Display(Name = "Дата закрытия")]
+        [Display(Name = "Closing date")]
         public DateTime DropTime { get; set; }
     }
 }

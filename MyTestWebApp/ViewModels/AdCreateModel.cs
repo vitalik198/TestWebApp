@@ -6,12 +6,12 @@ namespace MyTestWebApp.Models
     public class AdCreateModel
     {
         [Required]
-        [Display(Name = "Номер")]
+        [Display(Name = "Number")]
         public int Number { get; set; }
 
         [Required]
         [DataType(DataType.MultilineText)]
-        [Display(Name = "Информация")]
+        [Display(Name = "Info")]
         public string Text { get; set; }
 
         public string Image { get; set; }

@@ -16,22 +16,22 @@ namespace MyTestWebApp.Models
 
         [Required]
         [DataType(DataType.Password)]
-        [Display(Name = "Пароль")]
+        [Display(Name = "Password")]
         public string Password { get; set; }
 
         [Required]
         [DataType(DataType.Password)]
-        [Display(Name = "Подтвердите пароль")]
-        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
+        [Display(Name = "Confirm password")]
+        [Compare("Password", ErrorMessage = "Password mismatch")]
         public string ConfirmPassword { get; set; }
 
         [Required]
         [DataType(DataType.Text)]
-        [Display(Name = "Имя пользователя")]
+        [Display(Name = "User name")]
         public string UserName { get; set; }
 
         [Required]
-        [Display(Name = "Админ")]
+        [Display(Name = "Admin")]
         public bool IsAdmin { get; set; }
     }
 }
