@@ -3,28 +3,28 @@
 
 
 <div>
-    <h1>Доска объявлений</h1>
+    <h1>Ads board</h1>
 
     <div class="border-right">
         <form action="" method="get" class="float-right">
-            <input type="search" name="search" placeholder="Поиск" />
-            <input type="submit" value="Искать" />
+            <input type="search" name="search" placeholder="" />
+            <input type="submit" value="Search" />
         </form>
     </div>
 
     @if (User.Identity.IsAuthenticated)
     {
-                <a onclick="showInPopUp('@Url.Action("Create","Ads",null,Context.Request.Scheme)', 'Добавить объявление')" class="btn btn-success">Добавить объявление</a>
+        <a onclick="showInPopUp('@Url.Action("Create","Ads",null,Context.Request.Scheme)', 'Add ad')" class="btn btn-success">Add ad</a>
     }
     else
     {
-                <hr class="invisible" />
-                <hr class="invisible" />
-                <div>
-                    <div class="alert alert-warning" role="alert">
-                        Вы должны быть авторизованы чтобы размещать уведомления!
-                    </div>
-                </div>
+        <hr class="invisible" />
+        <hr class="invisible" />
+        <div>
+            <div class="alert alert-warning" role="alert">
+                You must be logged in to post ads!
+            </div>
+        </div>
     }
 
     <table style="border-collapse" class="table">
@@ -51,41 +51,41 @@
         <tbody>
             @foreach (var item in Model.ads)
             {
-                        <tr>
-                            <td>
-                                <img width="250" height="250" src="@item.Image" />
-                            </td>
-                            <td>
+                <tr>
+                    <td>
+                        <img width="250" height="250" src="@item.Image" />
+                    </td>
+                    <td>
                         @Html.DisplayFor(modelItem => item.Number)
-                            </td>
-                            <td>
+                    </td>
+                    <td>
                         @Html.DisplayFor(modelItem => item.Text)
-                            </td>
-                            <td>
+                    </td>
+                    <td>
                         @Html.DisplayFor(modelItem => item.Rating)
-                            </td>
-                            <td>
-                                <div>
+                    </td>
+                    <td>
+                        <div>
                             @if (item.UserName != null)
                             {
-                                                <div> @item.UserName</div>
+                                <div> @item.UserName</div>
                             }
-                                </div>
-                            </td>
-                            <td>
-                                <button onclick="showInPopUp('@Url.Action("Details","Ads",new{id=item.AdId})','Детали')" asp-route-id="@item.AdId" class="btn btn-primary">Детали</button>
+                        </div>
+                    </td>
+                    <td>
+                        <button onclick="showInPopUp('@Url.Action("Details","Ads",new{id=item.AdId})','Details')" asp-route-id="@item.AdId" class="btn btn-primary">Details</button>
 
                         @if ((User.Identity.IsAuthenticated && User.IsInRole("admin")) || User.Identity.Name == item.UserName)
                         {
-                                            <div>
-                                                <button onclick="showInPopUp('@Url.Action("Edit","Ads",new{id=item.AdId})','Редактировать')" asp-route-id="@item.AdId" class="btn btn-outline-info">Редактировать</button>
-                                                <button onclick="showInPopUp('@Url.Action("Delete","Ads",new{id=item.AdId})','Удалить')" asp-route-id="@item.AdId" class="btn btn-outline-danger">Удалить</button>
-                                            </div>
+                            <div>
+                                <button onclick="showInPopUp('@Url.Action("Edit","Ads",new{id=item.AdId})','Edit')" asp-route-id="@item.AdId" class="btn btn-outline-info">Edit</button>
+                                <button onclick="showInPopUp('@Url.Action("Delete","Ads",new{id=item.AdId})','Delete')" asp-route-id="@item.AdId" class="btn btn-outline-danger">Delete</button>
+                            </div>
                         }
-                            </td>
-                        </tr>
+                    </td>
+                </tr>
             }
         </tbody>
     </table>
-<page-link page-model="Model.PageViewModel" page-action="Index"></page-link>
+    <page-link page-model="Model.PageViewModel" page-action="Index"></page-link>
 </div>

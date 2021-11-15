@@ -5,14 +5,14 @@
 
 @if (User.Identity.IsAuthenticated)
 {
-    <h1>Вы вошли как  @User.Identity.Name</h1>
+    <h1>You are logged in as  @User.Identity.Name</h1>
     <a asp-action="Logout" asp-controller="Account" class="btn btn-danger">Выйти?</a>
 }
 else
 {
-    <h1>Вы не вошли в аккаунт :(</h1>
-    <a asp-action="Login" asp-controller="Account" class="btn btn-primary">Войти</a>
+    <h1>You are not signed in. :(</h1>
+    <a asp-action="Login" asp-controller="Account" class="btn btn-primary">Sign in</a>
     <hr />
-    <a asp-action="Register" asp-controller="Account" class="btn btn-primary">Создать новый аккаунт</a>
+    <a asp-action="Register" asp-controller="Account" class="btn btn-primary">Sign up</a>
 }
 

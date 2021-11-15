@@ -25,12 +25,12 @@
                 <span asp-validation-for="Image" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" class="btn btn-primary" value="Добавить" >
+                <input type="submit" class="btn btn-primary" value="Add" >
             </div>
         </form>
     </div>
 </div>
-            <button onclick="closePopUp()" class="btn btn-dark">Назад</button>
+            <button onclick="closePopUp()" class="btn btn-dark">Back</button>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

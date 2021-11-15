@@ -4,9 +4,7 @@
     ViewData["Title"] = "Login";
 }
 
-<h1>Вход</h1>
-
-<h4>Введите данные вашего аккаунта:</h4>
+<h4>Enter your account details:</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -23,14 +21,14 @@
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Войти" class="btn btn-primary" />
+                <input type="submit" value="Sign in" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index" class="btn btn-dark">Назад</a>
-    <a asp-action="Register" class="btn btn-dark">Нет аккаунта?</a>
+    <a asp-action="Index" class="btn btn-dark">Back</a>
+    <a asp-action="Register" class="btn btn-dark">Don't have an account?</a>
 </div>
 

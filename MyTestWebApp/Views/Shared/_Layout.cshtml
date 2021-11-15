@@ -19,21 +19,21 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Домой</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li>
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Ads" asp-action="Index">Объявления</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Ads" asp-action="Index">Ads</a>
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Выйти из аккаунта</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Log out</a>
                             </li>
                         }
                         else
                         {
                             <li class=nav-item>
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Войти в аккаунт</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Log in</a>
                             </li>
                         }
                         <li>
@@ -45,7 +45,7 @@
             @if (User.Identity.IsAuthenticated)
             {
                 <div class="float-right">
-                    Привет, @User.Identity.Name
+                    Hi, @User.Identity.Name
                 </div>
             }
         </nav>
